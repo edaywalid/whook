@@ -5,6 +5,8 @@ every inbound webhook the moment it arrives, returns a fast 2xx so the provider
 is happy, and then forwards the event to one or more destinations with automatic
 retries. You can list, inspect, and replay any captured event.
 
+![Without whook the event is lost when your app is down; with whook it is captured to disk and delivered later](docs/diagrams/assets/without-vs-with-whook.png)
+
 ## The problem
 
 Services like Stripe, GitHub, and Shopify notify you about things that happen by
@@ -44,6 +46,29 @@ gateway owns the inbound webhook end to end:
 Hosted products solve this, but they cost money and you hand them your traffic.
 The open-source options mostly cover the opposite direction (sending webhooks to
 your own customers). whook is for the receiving side, and you run it yourself.
+
+## How it works
+
+An inbound request is saved to durable storage before it is acknowledged.
+Delivery happens afterward, on whook's own schedule, with retries, dead-lettering,
+and replay.
+
+![Architecture: provider to ingest with a signature gate, to durable SQLite store, to router, to delivery workers, out to your destinations, with dashed dead-letter and replay branches](docs/diagrams/assets/architecture.png)
+
+A failed delivery is retried with exponential backoff until an attempt succeeds
+or the retry budget is exhausted and the event is dead-lettered for inspection
+and replay.
+
+![Retry timeline: attempts fail with growing backoff gaps until one succeeds or the budget runs out and the event is dead-lettered](docs/diagrams/assets/retry-timeline.png)
+
+One captured event fans out to every matching destination as an independent
+delivery track, each with its own status. A failing destination never blocks the
+others.
+
+![Fan-out: one captured event delivered to billing, email, and analytics, each an independent track with its own delivered, retrying, or dead-lettered status](docs/diagrams/assets/fan-out.png)
+
+The diagrams above are generated from standalone HTML sources in
+[`docs/diagrams/`](docs/diagrams/) (open [`index.html`](docs/diagrams/index.html)).
 
 ## Stack
 

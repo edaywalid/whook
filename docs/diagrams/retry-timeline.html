@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>whook · Retry Timeline</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:   #f3f1ec;
+      --color-ink:     #1e2a32;
+      --color-muted:   #566b73;
+      --color-accent:  #0f766e;
+      --font-sans:     'Geist', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', serif;
+      --font-mono:     'Geist Mono', ui-monospace, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      margin-bottom: 0.4rem;
+    }
+    .sub {
+      font-size: 0.95rem;
+      color: var(--color-muted);
+      margin-bottom: 1.5rem;
+      max-width: 64ch;
+    }
+    svg { width: 100%; min-width: 980px; display: block; }
+    .foot {
+      margin-top: 1.25rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(30,42,50,0.12);
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">whook · Delivery retry</p>
+    <h1>Each failure waits longer than the last.</h1>
+    <p class="sub">A failed delivery is rescheduled with exponential backoff. whook keeps retrying through a fixed budget; one attempt succeeds, or the budget runs out and the event is dead-lettered for inspection and replay.</p>
+
+    <svg viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#566b73"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#0f766e"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f3f1ec"/>
+
+      <!-- baseline (time axis) -->
+      <line x1="40" y1="240" x2="956" y2="240" stroke="#c4c2bb" stroke-width="1"/>
+      <text x="956" y="260" fill="#869399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="end" letter-spacing="0.10em">TIME →</text>
+
+      <!-- ===== backoff gap brackets (growing) ===== -->
+      <!-- gap 1: ~1s  (96 -> 168) -->
+      <path d="M 96 268 L 96 280 L 168 280 L 168 268" fill="none" stroke="rgba(30,42,50,0.30)" stroke-width="0.8"/>
+      <text x="132" y="296" fill="#869399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">wait 1s</text>
+      <!-- gap 2: ~2s (168 -> 288) -->
+      <path d="M 168 268 L 168 280 L 288 280 L 288 268" fill="none" stroke="rgba(30,42,50,0.30)" stroke-width="0.8"/>
+      <text x="228" y="296" fill="#869399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">wait 2s</text>
+      <!-- gap 3: ~4s (288 -> 488) -->
+      <path d="M 288 268 L 288 280 L 488 280 L 488 268" fill="none" stroke="rgba(30,42,50,0.30)" stroke-width="0.8"/>
+      <text x="388" y="296" fill="#869399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">wait 4s</text>
+      <!-- gap 4: ~8s (488 -> 768) -->
+      <path d="M 488 268 L 488 280 L 768 280 L 768 268" fill="none" stroke="rgba(30,42,50,0.30)" stroke-width="0.8"/>
+      <text x="628" y="296" fill="#869399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">wait 8s</text>
+
+      <!-- ===== attempt 1 (fail) ===== -->
+      <circle cx="96" cy="240" r="4" fill="#566b73"/>
+      <line x1="96" y1="236" x2="96" y2="196" stroke="rgba(30,42,50,0.30)" stroke-width="0.8"/>
+      <rect x="52" y="160" width="68" height="36" rx="6" fill="#ffffff" stroke="#1e2a32" stroke-width="1"/>
+      <text x="86" y="176" fill="#1e2a32" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Attempt 1</text>
+      <text x="86" y="189" fill="#566b73" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">503</text>
+
+      <!-- ===== attempt 2 (fail) ===== -->
+      <circle cx="168" cy="240" r="4" fill="#566b73"/>
+      <line x1="168" y1="236" x2="168" y2="196" stroke="rgba(30,42,50,0.30)" stroke-width="0.8"/>
+      <rect x="132" y="160" width="68" height="36" rx="6" fill="#ffffff" stroke="#1e2a32" stroke-width="1"/>
+      <text x="166" y="176" fill="#1e2a32" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Attempt 2</text>
+      <text x="166" y="189" fill="#566b73" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">timeout</text>
+
+      <!-- ===== attempt 3 (fail) ===== -->
+      <circle cx="288" cy="240" r="4" fill="#566b73"/>
+      <line x1="288" y1="236" x2="288" y2="196" stroke="rgba(30,42,50,0.30)" stroke-width="0.8"/>
+      <rect x="248" y="160" width="80" height="36" rx="6" fill="#ffffff" stroke="#1e2a32" stroke-width="1"/>
+      <text x="288" y="176" fill="#1e2a32" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Attempt 3</text>
+      <text x="288" y="189" fill="#566b73" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">503 · app down</text>
+
+      <!-- ===== attempt 4 (fail) ===== -->
+      <circle cx="488" cy="240" r="4" fill="#566b73"/>
+      <line x1="488" y1="236" x2="488" y2="196" stroke="rgba(30,42,50,0.30)" stroke-width="0.8"/>
+      <rect x="448" y="160" width="80" height="36" rx="6" fill="#ffffff" stroke="#1e2a32" stroke-width="1"/>
+      <text x="488" y="176" fill="#1e2a32" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Attempt 4</text>
+      <text x="488" y="189" fill="#566b73" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">502</text>
+
+      <!-- ===== branch point at attempt N ===== -->
+      <!-- SUCCESS path (accent, upper) -->
+      <circle cx="768" cy="240" r="6" fill="#0f766e"/>
+      <line x1="768" y1="234" x2="768" y2="148" stroke="#0f766e" stroke-width="1.2"/>
+      <rect x="704" y="108" width="128" height="40" rx="6" fill="rgba(15,118,110,0.08)" stroke="#0f766e" stroke-width="1.4"/>
+      <rect x="712" y="115" width="40" height="11" rx="2" fill="transparent" stroke="rgba(15,118,110,0.50)" stroke-width="0.8"/>
+      <text x="732" y="123" fill="#0f766e" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">SUCCESS</text>
+      <text x="788" y="124" fill="#1e2a32" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">200 OK</text>
+      <text x="768" y="140" fill="#566b73" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">delivered · done</text>
+
+      <!-- DEAD-LETTER path (lower, dashed alt outcome) -->
+      <text x="624" y="338" fill="#869399" font-size="9" font-family="'Instrument Serif', serif" font-style="italic" text-anchor="middle">or, if the budget is exhausted…</text>
+      <line x1="768" y1="246" x2="864" y2="330" stroke="rgba(30,42,50,0.40)" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+      <rect x="848" y="328" width="108" height="48" rx="6" fill="rgba(15,118,110,0.08)" stroke="#0f766e" stroke-width="1.4"/>
+      <rect x="856" y="335" width="56" height="11" rx="2" fill="transparent" stroke="rgba(15,118,110,0.50)" stroke-width="0.8"/>
+      <text x="884" y="343" fill="#0f766e" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">DEAD-LETTER</text>
+      <text x="902" y="358" fill="#1e2a32" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Set aside</text>
+      <text x="902" y="371" fill="#566b73" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">inspect · replay</text>
+
+      <!-- N marker on axis -->
+      <text x="744" y="262" fill="#869399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="end" letter-spacing="0.08em">ATTEMPT N</text>
+
+      <!-- ===== LEGEND ===== -->
+      <line x1="40" y1="398" x2="500" y2="398" stroke="rgba(30,42,50,0.10)" stroke-width="0.8"/>
+      <circle cx="48" cy="382" r="4" fill="#566b73"/>
+      <text x="60" y="385" fill="#566b73" font-size="8.5" font-family="'Geist', sans-serif">Failed attempt</text>
+      <circle cx="188" cy="382" r="5" fill="#0f766e"/>
+      <text x="200" y="385" fill="#566b73" font-size="8.5" font-family="'Geist', sans-serif">Terminal outcome</text>
+      <line x1="332" y1="382" x2="360" y2="382" stroke="rgba(30,42,50,0.40)" stroke-width="1.2" stroke-dasharray="5,4"/>
+      <text x="368" y="385" fill="#566b73" font-size="8.5" font-family="'Geist', sans-serif">Alternate path</text>
+    </svg>
+
+    <div class="foot">whook · exponential backoff · fixed retry budget · dead-letter on exhaustion</div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>whook · Explainer Diagrams</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:   #f3f1ec;
+      --color-ink:     #1e2a32;
+      --color-muted:   #566b73;
+      --color-accent:  #0f766e;
+      --font-sans:     'Geist', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', serif;
+      --font-mono:     'Geist Mono', ui-monospace, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 4rem 2rem;
+    }
+    .frame { max-width: 760px; width: 100%; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.9rem, 3vw + 1rem, 2.75rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 0.6rem;
+    }
+    .lede {
+      font-size: 1.02rem;
+      color: var(--color-muted);
+      max-width: 56ch;
+      margin-bottom: 2.5rem;
+      line-height: 1.5;
+    }
+    ol { list-style: none; counter-reset: d; }
+    li { counter-increment: d; }
+    a.card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: #ffffff;
+      border: 1px solid rgba(30,42,50,0.12);
+      border-radius: 6px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 0.9rem;
+      transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+    a.card:hover { border-color: var(--color-accent); transform: translateY(-1px); }
+    .card-head { display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.3rem; }
+    .num {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--color-accent);
+      letter-spacing: 0.1em;
+    }
+    .card h2 {
+      font-family: var(--font-sans);
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .card p {
+      font-size: 0.9rem;
+      color: var(--color-muted);
+      line-height: 1.45;
+      margin-left: 2.1rem;
+    }
+    .tag {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      border: 1px solid rgba(30,42,50,0.18);
+      border-radius: 4px;
+      padding: 0.15rem 0.45rem;
+    }
+    .foot {
+      margin-top: 2.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(30,42,50,0.12);
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">whook · Explainer set</p>
+    <h1>How whook keeps every webhook.</h1>
+    <p class="lede">A self-hostable webhook gateway in a single Go binary. It captures every inbound request durably the instant it arrives, returns a fast 2xx, then delivers asynchronously with retries. Four diagrams, one idea each.</p>
+
+    <ol>
+      <li>
+        <a class="card" href="without-vs-with-whook.html">
+          <div class="card-head">
+            <span class="num">01</span>
+            <h2>Without vs With whook</h2>
+            <span class="tag">Hero</span>
+          </div>
+          <p>The case for a gateway. Point a provider straight at your app and one bad moment loses the event; point it at whook and it's on disk before the provider hangs up.</p>
+        </a>
+      </li>
+      <li>
+        <a class="card" href="architecture.html">
+          <div class="card-head">
+            <span class="num">02</span>
+            <h2>Architecture</h2>
+            <span class="tag">Data flow</span>
+          </div>
+          <p>Provider to ingest to durable store to router to delivery workers to your destinations, with a signature gate, dead-letter, and replay. Saved before it's acknowledged.</p>
+        </a>
+      </li>
+      <li>
+        <a class="card" href="retry-timeline.html">
+          <div class="card-head">
+            <span class="num">03</span>
+            <h2>Retry timeline</h2>
+            <span class="tag">Timeline</span>
+          </div>
+          <p>Exponential backoff in action. Each failure waits longer than the last until an attempt succeeds or the retry budget runs out and the event is dead-lettered.</p>
+        </a>
+      </li>
+      <li>
+        <a class="card" href="fan-out.html">
+          <div class="card-head">
+            <span class="num">04</span>
+            <h2>Fan-out</h2>
+            <span class="tag">Branching</span>
+          </div>
+          <p>One captured event to billing, email, and analytics, each an independent delivery track with its own status. A failing destination never blocks the others.</p>
+        </a>
+      </li>
+    </ol>
+
+    <div class="foot">whook · self-hostable webhook gateway · Go + SQLite</div>
+  </div>
+</body>
+</html>

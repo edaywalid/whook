@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>whook · Without vs With</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:   #f3f1ec;
+      --color-ink:     #1e2a32;
+      --color-muted:   #566b73;
+      --color-accent:  #0f766e;
+      --font-sans:     'Geist', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', serif;
+      --font-mono:     'Geist Mono', ui-monospace, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.6rem, 2.6vw + 0.75rem, 2.25rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.12;
+      color: var(--color-ink);
+      margin-bottom: 0.4rem;
+    }
+    .sub {
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      color: var(--color-muted);
+      margin-bottom: 1.5rem;
+      max-width: 56ch;
+    }
+    svg { width: 100%; min-width: 940px; display: block; }
+    .foot {
+      margin-top: 1.25rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(30,42,50,0.12);
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">whook · The case for a gateway</p>
+    <h1>A webhook arrives exactly once, at a moment you don't control.</h1>
+    <p class="sub">Point a provider straight at your app and a single bad moment loses the event. Point it at whook and the event is on disk before anyone says it happened.</p>
+
+    <svg viewBox="0 0 1000 470" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#566b73"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#0f766e"/></marker>
+        <marker id="arrow-ghost" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="rgba(30,42,50,0.28)"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f3f1ec"/>
+
+      <!-- ===================== LEFT PANEL — WITHOUT ===================== -->
+      <text x="40" y="40" fill="#1e2a32" font-size="13" font-weight="600" font-family="'Geist', sans-serif" letter-spacing="0.01em">Without whook</text>
+      <text x="40" y="58" fill="#869399" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.08em">PROVIDER → YOUR APP</text>
+
+      <!-- Stripe provider -->
+      <rect x="40" y="92" width="128" height="60" rx="6" fill="#f3f1ec"/>
+      <rect x="40" y="92" width="128" height="60" rx="6" fill="rgba(86,107,115,0.10)" stroke="#869399" stroke-width="1"/>
+      <rect x="48" y="100" width="40" height="12" rx="2" fill="transparent" stroke="rgba(134,147,153,0.40)" stroke-width="0.8"/>
+      <text x="68" y="109" fill="#869399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">PROVIDER</text>
+      <text x="104" y="130" fill="#1e2a32" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Stripe</text>
+      <text x="104" y="145" fill="#566b73" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">POST /webhooks</text>
+
+      <!-- packet in flight (ghost, struck) -->
+      <!-- trajectory line that misses -->
+      <path d="M 176 122 Q 280 122 332 168" fill="none" stroke="rgba(30,42,50,0.28)" stroke-width="1.2" stroke-dasharray="5,4"/>
+      <!-- the falling packet -->
+      <g opacity="0.5">
+        <rect x="220" y="186" width="60" height="40" rx="6" fill="#e7e4dd" stroke="rgba(30,42,50,0.30)" stroke-width="1" transform="rotate(18 250 206)"/>
+        <text x="250" y="210" fill="#566b73" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle" transform="rotate(18 250 206)">{ }</text>
+      </g>
+      <!-- strike-through over the packet -->
+      <line x1="216" y1="226" x2="288" y2="178" stroke="#1e2a32" stroke-width="1.4" opacity="0.55"/>
+      <!-- drop trail -->
+      <path d="M 250 230 Q 250 300 248 372" fill="none" stroke="rgba(30,42,50,0.22)" stroke-width="1" stroke-dasharray="2,6"/>
+
+      <!-- EVENT LOST label -->
+      <rect x="196" y="396" width="108" height="22" rx="4" fill="#f3f1ec" stroke="rgba(30,42,50,0.30)" stroke-width="1"/>
+      <text x="250" y="411" fill="#566b73" font-size="9" font-weight="600" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">EVENT LOST</text>
+
+      <!-- Your App (down / deploying) -->
+      <rect x="332" y="122" width="128" height="60" rx="6" fill="#f3f1ec"/>
+      <rect x="332" y="122" width="128" height="60" rx="6" fill="rgba(30,42,50,0.03)" stroke="rgba(30,42,50,0.30)" stroke-width="1" stroke-dasharray="4,3"/>
+      <rect x="340" y="130" width="48" height="12" rx="2" fill="transparent" stroke="rgba(30,42,50,0.22)" stroke-width="0.8"/>
+      <text x="364" y="139" fill="#869399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">DEPLOYING</text>
+      <text x="396" y="160" fill="rgba(30,42,50,0.45)" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Your App</text>
+      <text x="396" y="175" fill="#869399" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">503 · unreachable</text>
+
+      <!-- aside -->
+      <text x="40" y="446" fill="#1e2a32" font-size="13" font-family="'Instrument Serif', serif" font-style="italic">The “payment succeeded” notice just vanished. No record.</text>
+
+      <!-- divider -->
+      <line x1="500" y1="80" x2="500" y2="438" stroke="rgba(30,42,50,0.12)" stroke-width="1"/>
+
+      <!-- ===================== RIGHT PANEL — WITH ===================== -->
+      <text x="540" y="40" fill="#0f766e" font-size="13" font-weight="600" font-family="'Geist', sans-serif" letter-spacing="0.01em">With whook</text>
+      <text x="540" y="58" fill="#869399" font-size="9" font-family="'Geist Mono', monospace" letter-spacing="0.08em">PROVIDER → WHOOK → YOUR APP</text>
+
+      <!-- Stripe provider -->
+      <rect x="540" y="92" width="120" height="60" rx="6" fill="#f3f1ec"/>
+      <rect x="540" y="92" width="120" height="60" rx="6" fill="rgba(86,107,115,0.10)" stroke="#869399" stroke-width="1"/>
+      <rect x="548" y="100" width="40" height="12" rx="2" fill="transparent" stroke="rgba(134,147,153,0.40)" stroke-width="0.8"/>
+      <text x="568" y="109" fill="#869399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">PROVIDER</text>
+      <text x="600" y="130" fill="#1e2a32" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Stripe</text>
+      <text x="600" y="145" fill="#566b73" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">POST /ingest</text>
+
+      <!-- provider -> whook (accent) -->
+      <line x1="660" y1="122" x2="712" y2="122" stroke="#0f766e" stroke-width="1.6" marker-end="url(#arrow-accent)"/>
+
+      <!-- whook (focal) -->
+      <rect x="712" y="92" width="140" height="60" rx="6" fill="#f3f1ec"/>
+      <rect x="712" y="92" width="140" height="60" rx="6" fill="rgba(15,118,110,0.08)" stroke="#0f766e" stroke-width="1.2"/>
+      <rect x="720" y="100" width="36" height="12" rx="2" fill="transparent" stroke="rgba(15,118,110,0.50)" stroke-width="0.8"/>
+      <text x="738" y="109" fill="#0f766e" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">GATEWAY</text>
+      <text x="782" y="130" fill="#1e2a32" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">whook</text>
+      <text x="782" y="145" fill="#566b73" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">capture → 2xx</text>
+
+      <!-- fast 2xx returned immediately (accent, back to provider) -->
+      <path d="M 712 142 Q 686 168 660 142" fill="none" stroke="#0f766e" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <rect x="648" y="170" width="68" height="14" rx="2" fill="#f3f1ec"/>
+      <text x="682" y="180" fill="#0f766e" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">FAST 200 OK</text>
+
+      <!-- whook -> durable store (down) -->
+      <line x1="782" y1="152" x2="782" y2="206" stroke="#566b73" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="788" y="170" width="64" height="12" rx="2" fill="#f3f1ec"/>
+      <text x="820" y="180" fill="#566b73" font-size="8" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">SAVE</text>
+
+      <!-- Durable store -->
+      <rect x="712" y="206" width="140" height="58" rx="6" fill="#f3f1ec"/>
+      <rect x="712" y="206" width="140" height="58" rx="6" fill="rgba(30,42,50,0.05)" stroke="#566b73" stroke-width="1"/>
+      <rect x="720" y="214" width="36" height="12" rx="2" fill="transparent" stroke="rgba(86,107,115,0.50)" stroke-width="0.8"/>
+      <text x="738" y="223" fill="#566b73" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STORE</text>
+      <text x="782" y="242" fill="#1e2a32" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Durable Store</text>
+      <text x="782" y="257" fill="#566b73" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">SQLite · on disk</text>
+
+      <!-- captured + safe badge -->
+      <rect x="560" y="218" width="120" height="34" rx="6" fill="rgba(15,118,110,0.08)" stroke="#0f766e" stroke-width="1"/>
+      <text x="620" y="232" fill="#0f766e" font-size="9" font-weight="600" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.10em">CAPTURED</text>
+      <text x="620" y="245" fill="#566b73" font-size="8.5" font-family="'Geist', sans-serif" text-anchor="middle">safe even if app is down</text>
+      <path d="M 680 235 Q 698 235 712 235" fill="none" stroke="#0f766e" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- store -> deliver on schedule -->
+      <line x1="782" y1="264" x2="782" y2="312" stroke="#566b73" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="788" y="278" width="104" height="12" rx="2" fill="#f3f1ec"/>
+      <text x="794" y="288" fill="#566b73" font-size="8" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">DELIVER · RETRY</text>
+
+      <!-- Your App (recovered) -->
+      <rect x="712" y="312" width="140" height="58" rx="6" fill="#f3f1ec"/>
+      <rect x="712" y="312" width="140" height="58" rx="6" fill="#ffffff" stroke="#1e2a32" stroke-width="1"/>
+      <rect x="720" y="320" width="28" height="12" rx="2" fill="transparent" stroke="rgba(30,42,50,0.40)" stroke-width="0.8"/>
+      <text x="734" y="329" fill="#1e2a32" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">APP</text>
+      <text x="782" y="348" fill="#1e2a32" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Your App</text>
+      <text x="782" y="363" fill="#566b73" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">processed when ready</text>
+
+      <!-- aside -->
+      <text x="540" y="446" fill="#1e2a32" font-size="13" font-family="'Instrument Serif', serif" font-style="italic">whook holds the event and keeps trying until your app is back.</text>
+    </svg>
+
+    <div class="foot">whook · self-hostable webhook gateway · single Go binary · SQLite</div>
+  </div>
+</body>
+</html>
