@@ -37,7 +37,7 @@ type Config struct {
 func Load() (Config, error) {
 	c := Config{
 		Addr:         envStr("WHOOK_ADDR", ":8080"),
-		DatabaseURL:  envStr("WHOOK_DATABASE_URL", "file:whook.db?_journal_mode=WAL&_busy_timeout=5000"),
+		DatabaseURL:  envStr("WHOOK_DATABASE_URL", "file:whook.db?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)"),
 		AdminToken:   envStr("WHOOK_ADMIN_TOKEN", ""),
 		SecretKey:    envStr("WHOOK_SECRET_KEY", ""),
 		MaxBodyBytes: envInt64("WHOOK_MAX_BODY_BYTES", 1<<20), // 1 MiB
