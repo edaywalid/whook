@@ -52,15 +52,70 @@ your own customers). whook is for the receiving side, and you run it yourself.
 - Standard library HTTP, server-rendered UI
 - dbmate for migrations
 
-## Development
+## Run with Docker
+
+```sh
+cp .env.example .env   # set WHOOK_ADMIN_TOKEN and WHOOK_SECRET_KEY
+docker compose up --build -d
+```
+
+The gateway listens on `http://localhost:8080`. Data persists in the
+`whook-data` volume.
+
+## Run locally
 
 ```sh
 go build ./...
 go test ./...
-```
-
-Run the gateway (defaults to a local SQLite file):
-
-```sh
 go run ./cmd/whook
 ```
+
+It defaults to a SQLite file (`whook.db`) in the working directory.
+
+## Configuration
+
+All settings come from environment variables.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `WHOOK_ADDR` | `:8080` | HTTP listen address |
+| `WHOOK_DATABASE_URL` | `file:whook.db?...` | SQLite DSN |
+| `WHOOK_ADMIN_TOKEN` | empty | Bearer token for the management API and dashboard. Empty disables auth (local only) |
+| `WHOOK_SECRET_KEY` | empty | Passphrase to encrypt provider signing secrets at rest |
+| `WHOOK_MAX_BODY_BYTES` | `1048576` | Max inbound body size; larger is rejected with 413 |
+| `WHOOK_WORKERS` | `4` | Concurrent delivery workers |
+| `WHOOK_POLL_INTERVAL` | `1s` | How often workers poll the queue |
+
+## Quick start
+
+```sh
+# 1. Register a source (the provider integration)
+curl -X POST localhost:8080/sources -d '{"name":"stripe"}'
+
+# 2. Point it at one or more destinations
+curl -X POST localhost:8080/destinations \
+  -d '{"source":"stripe","url":"https://your-app.example.com/webhooks"}'
+
+# 3. Send a webhook to the gateway
+curl -X POST localhost:8080/ingest/stripe \
+  -H 'Content-Type: application/json' \
+  -d '{"type":"payment.succeeded","amount":4900}'
+
+# 4. Inspect captured events
+curl localhost:8080/events
+```
+
+Open `http://localhost:8080/ui` for the dashboard. With an admin token set,
+pass it as `Authorization: Bearer <token>` (or `?token=` for the dashboard).
+
+## HTTP API
+
+| Method & path | Purpose |
+| --- | --- |
+| `POST /ingest/{source}` | Capture an inbound webhook (public) |
+| `GET /healthz` | Liveness check (public) |
+| `GET /events` | List captured events |
+| `GET /events/{id}` | Event detail with delivery-attempt history |
+| `POST /events/{id}/replay` | Re-deliver an event (optional `?destination_id=`) |
+| `GET/POST /sources`, `PATCH /sources/{name}` | Manage sources |
+| `GET/POST /destinations`, `PATCH /destinations/{id}` | Manage destinations |
