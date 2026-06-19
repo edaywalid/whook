@@ -329,11 +329,11 @@ func (s *Store) ListAttempts(ctx context.Context, eventID string) ([]core.Delive
 
 func (s *Store) Enqueue(ctx context.Context, p core.PendingDelivery) error {
 	const q = `INSERT INTO pending_deliveries
-		(id, event_id, destination_id, attempt_number, next_attempt_at, state, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+		(id, event_id, destination_id, attempt_number, next_attempt_at, state, is_replay, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	now := p.NextAttemptAt
 	_, err := s.db.ExecContext(ctx, q,
-		p.ID, p.EventID, p.DestinationID, p.AttemptNumber, p.NextAttemptAt, string(core.StatePending), now, now)
+		p.ID, p.EventID, p.DestinationID, p.AttemptNumber, p.NextAttemptAt, string(core.StatePending), p.IsReplay, now, now)
 	if err != nil {
 		return fmt.Errorf("enqueueing delivery: %w", err)
 	}
@@ -353,7 +353,7 @@ func (s *Store) ClaimDue(ctx context.Context, now time.Time, lease time.Duration
 			ORDER BY next_attempt_at
 			LIMIT ?
 		)
-		RETURNING id, event_id, destination_id, attempt_number, next_attempt_at, state`
+		RETURNING id, event_id, destination_id, attempt_number, next_attempt_at, state, is_replay`
 	leaseUntil := now.Add(lease)
 	rows, err := s.db.QueryContext(ctx, q, leaseUntil, now, now, now, limit)
 	if err != nil {
@@ -364,7 +364,7 @@ func (s *Store) ClaimDue(ctx context.Context, now time.Time, lease time.Duration
 	out := []core.PendingDelivery{}
 	for rows.Next() {
 		var p core.PendingDelivery
-		if err := rows.Scan(&p.ID, &p.EventID, &p.DestinationID, &p.AttemptNumber, &p.NextAttemptAt, &p.State); err != nil {
+		if err := rows.Scan(&p.ID, &p.EventID, &p.DestinationID, &p.AttemptNumber, &p.NextAttemptAt, &p.State, &p.IsReplay); err != nil {
 			return nil, fmt.Errorf("scanning pending delivery: %w", err)
 		}
 		out = append(out, p)

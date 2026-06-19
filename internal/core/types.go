@@ -88,6 +88,7 @@ type PendingDelivery struct {
 	AttemptNumber int
 	NextAttemptAt time.Time
 	State         DeliveryState
+	IsReplay      bool
 }
 
 // BackoffConfig controls retry timing.

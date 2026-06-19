@@ -77,6 +77,7 @@ CREATE TABLE pending_deliveries (
     next_attempt_at TIMESTAMP NOT NULL,
     locked_until    TIMESTAMP,
     state           TEXT NOT NULL DEFAULT 'pending',
+    is_replay       INTEGER NOT NULL DEFAULT 0,
     created_at      TIMESTAMP NOT NULL,
     updated_at      TIMESTAMP NOT NULL
 );
