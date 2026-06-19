@@ -107,6 +107,9 @@ All settings come from environment variables.
 | `WHOOK_MAX_BODY_BYTES` | `1048576` | Max inbound body size; larger is rejected with 413 |
 | `WHOOK_WORKERS` | `4` | Concurrent delivery workers |
 | `WHOOK_POLL_INTERVAL` | `1s` | How often workers poll the queue |
+| `WHOOK_RETENTION_AGE` | empty | Delete received events older than this (e.g. `720h`). Empty disables pruning |
+| `WHOOK_FAILED_RETENTION_AGE` | = retention | Keep rejected and dead-lettered events longer |
+| `WHOOK_PRUNE_INTERVAL` | `1h` | How often the pruner runs |
 
 ## Quick start
 
@@ -137,7 +140,11 @@ pass it as `Authorization: Bearer <token>` (or `?token=` for the dashboard).
 | `POST /ingest/{source}` | Capture an inbound webhook (public) |
 | `GET /healthz` | Liveness check (public) |
 | `GET /events` | List captured events |
-| `GET /events/{id}` | Event detail with delivery-attempt history |
+| `GET /events/{id}` | Event detail with per-destination delivery state and attempt history |
 | `POST /events/{id}/replay` | Re-deliver an event (optional `?destination_id=`) |
+| `GET /deadletters` | List deliveries that exhausted their retry budget |
 | `GET/POST /sources`, `PATCH /sources/{name}` | Manage sources |
 | `GET/POST /destinations`, `PATCH /destinations/{id}` | Manage destinations |
+
+The dashboard at `/ui` lists events, links to a per-event detail page (payload,
+delivery state, attempt history, replay button), and has a dead-letter view.
