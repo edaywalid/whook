@@ -59,6 +59,7 @@ func (s *Server) Handler() http.Handler {
 	mux.Handle("GET /events", s.admin(s.handleListEvents))
 	mux.Handle("GET /events/{id}", s.admin(s.handleGetEvent))
 	mux.Handle("POST /events/{id}/replay", s.admin(s.handleReplay))
+	mux.Handle("GET /deadletters", s.admin(s.handleListDeadLetters))
 
 	mux.Handle("GET /sources", s.admin(s.handleListSources))
 	mux.Handle("POST /sources", s.admin(s.handleCreateSource))
@@ -69,6 +70,9 @@ func (s *Server) Handler() http.Handler {
 	mux.Handle("PATCH /destinations/{id}", s.admin(s.handleUpdateDestination))
 
 	mux.Handle("GET /ui", s.admin(s.handleDashboard))
+	mux.Handle("GET /ui/events/{id}", s.admin(s.handleEventPage))
+	mux.Handle("POST /ui/events/{id}/replay", s.admin(s.handleUIReplay))
+	mux.Handle("GET /ui/deadletters", s.admin(s.handleDeadLettersPage))
 	mux.HandleFunc("GET /{$}", s.handleRoot)
 
 	return mux

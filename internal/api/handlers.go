@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net"
@@ -97,7 +98,45 @@ func (s *Server) handleGetEvent(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "loading attempts")
 		return
 	}
-	writeJSON(w, http.StatusOK, toDetail(event, attempts))
+	deliveries, err := s.store.DeliveriesForEvent(r.Context(), eventID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "loading deliveries")
+		return
+	}
+
+	urlOf := s.destinationURLs(r.Context(), event.Source)
+	writeJSON(w, http.StatusOK, toDetail(event, attempts, deliveries, urlOf))
+}
+
+// destinationURLs returns a lookup from destination id to URL for a source.
+// Failures yield an empty map so the caller still renders without URLs.
+func (s *Server) destinationURLs(ctx context.Context, source string) func(string) string {
+	urls := map[string]string{}
+	if dests, err := s.store.ListDestinations(ctx, source); err == nil {
+		for _, d := range dests {
+			urls[d.ID] = d.URL
+		}
+	}
+	return func(id string) string { return urls[id] }
+}
+
+func (s *Server) handleListDeadLetters(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	dead, err := s.store.ListDeadLetters(r.Context(), atoiDefault(q.Get("limit"), 50), atoiDefault(q.Get("offset"), 0))
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "listing dead letters")
+		return
+	}
+
+	out := make([]deadLetterDTO, 0, len(dead))
+	for _, p := range dead {
+		url := ""
+		if dest, err := s.store.GetDestination(r.Context(), p.DestinationID); err == nil {
+			url = dest.URL
+		}
+		out = append(out, toDeadLetterDTO(p, url))
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"dead_letters": out})
 }
 
 func (s *Server) handleReplay(w http.ResponseWriter, r *http.Request) {

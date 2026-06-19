@@ -39,17 +39,26 @@ type attemptDTO struct {
 	AttemptedAt   time.Time `json:"attempted_at"`
 }
 
-type eventDetail struct {
-	eventSummary
-	SourceIP string              `json:"source_ip,omitempty"`
-	Query    string              `json:"query,omitempty"`
-	DedupKey string              `json:"dedup_key,omitempty"`
-	Headers  map[string][]string `json:"headers"`
-	Body     string              `json:"body"`
-	Attempts []attemptDTO        `json:"attempts"`
+type deliveryDTO struct {
+	DestinationID  string `json:"destination_id"`
+	DestinationURL string `json:"destination_url,omitempty"`
+	AttemptNumber  int    `json:"attempt_number"`
+	State          string `json:"state"`
+	IsReplay       bool   `json:"is_replay"`
 }
 
-func toDetail(e core.Event, attempts []core.DeliveryAttempt) eventDetail {
+type eventDetail struct {
+	eventSummary
+	SourceIP   string              `json:"source_ip,omitempty"`
+	Query      string              `json:"query,omitempty"`
+	DedupKey   string              `json:"dedup_key,omitempty"`
+	Headers    map[string][]string `json:"headers"`
+	Body       string              `json:"body"`
+	Deliveries []deliveryDTO       `json:"deliveries"`
+	Attempts   []attemptDTO        `json:"attempts"`
+}
+
+func toDetail(e core.Event, attempts []core.DeliveryAttempt, deliveries []core.PendingDelivery, urlOf func(string) string) eventDetail {
 	out := eventDetail{
 		eventSummary: toSummary(e),
 		SourceIP:     e.SourceIP,
@@ -57,7 +66,17 @@ func toDetail(e core.Event, attempts []core.DeliveryAttempt) eventDetail {
 		DedupKey:     e.DedupKey,
 		Headers:      e.Headers,
 		Body:         string(e.Body),
+		Deliveries:   make([]deliveryDTO, 0, len(deliveries)),
 		Attempts:     make([]attemptDTO, 0, len(attempts)),
+	}
+	for _, d := range deliveries {
+		out.Deliveries = append(out.Deliveries, deliveryDTO{
+			DestinationID:  d.DestinationID,
+			DestinationURL: urlOf(d.DestinationID),
+			AttemptNumber:  d.AttemptNumber,
+			State:          string(d.State),
+			IsReplay:       d.IsReplay,
+		})
 	}
 	for _, a := range attempts {
 		out.Attempts = append(out.Attempts, attemptDTO{
@@ -73,6 +92,24 @@ func toDetail(e core.Event, attempts []core.DeliveryAttempt) eventDetail {
 		})
 	}
 	return out
+}
+
+type deadLetterDTO struct {
+	EventID        string    `json:"event_id"`
+	DestinationID  string    `json:"destination_id"`
+	DestinationURL string    `json:"destination_url,omitempty"`
+	AttemptNumber  int       `json:"attempt_number"`
+	LastAttemptAt  time.Time `json:"last_attempt_at"`
+}
+
+func toDeadLetterDTO(p core.PendingDelivery, url string) deadLetterDTO {
+	return deadLetterDTO{
+		EventID:        p.EventID,
+		DestinationID:  p.DestinationID,
+		DestinationURL: url,
+		AttemptNumber:  p.AttemptNumber,
+		LastAttemptAt:  p.NextAttemptAt,
+	}
 }
 
 type sourceDTO struct {
