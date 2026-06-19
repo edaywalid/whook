@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+/* whook brand system: teal accent carried from the project diagrams, warm
+   paper ground, deep slate ink. Light theme, locked. */
+@theme {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, monospace;
+
+  --color-paper: #f4f3ef;
+  --color-surface: #ffffff;
+  --color-surface-2: #faf9f5;
+  --color-ink: #17211f;
+  --color-body: #3b4845;
+  --color-muted: #6c7a76;
+  --color-hairline: #e4e1d9;
+
+  --color-teal: #0f766e;
+  --color-teal-strong: #0b5d56;
+  --color-teal-soft: #d6ece8;
+  --color-teal-tint: #eef9f6;
+
+  --color-http: #3a6ea5;
+  --color-warn: #a8620c;
+  --color-dead: #ad3f4a;
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background-color: var(--color-paper);
+  color: var(--color-body);
+  font-family: var(--font-sans);
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--color-ink);
+  text-wrap: balance;
+  letter-spacing: -0.025em;
+}
+
+::selection {
+  background: var(--color-teal-soft);
+  color: var(--color-teal-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Tabular figures for technical numbers (event ids, durations). */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Faint engineering grid for atmospheric sections. */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--color-ink) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--color-ink) 5%, transparent) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+/* Pressable feedback for every interactive control. */
+.pressable {
+  transition: transform 160ms var(--ease-out-quint);
+}
+.pressable:active {
+  transform: scale(0.97);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pressable:active {
+    transform: none;
+  }
+}
