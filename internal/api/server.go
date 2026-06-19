@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/edaywalid/whook/internal/ingest"
+	"github.com/edaywalid/whook/internal/metrics"
 	"github.com/edaywalid/whook/internal/source"
 	"github.com/edaywalid/whook/internal/storage"
 )
@@ -19,6 +20,7 @@ type Server struct {
 	store      storage.Store
 	capturer   *ingest.Capturer
 	sources    *source.Service
+	metrics    *metrics.Metrics
 	adminToken string
 	maxBody    int64
 	logger     *slog.Logger
@@ -30,6 +32,7 @@ type Config struct {
 	Store      storage.Store
 	Capturer   *ingest.Capturer
 	Sources    *source.Service
+	Metrics    *metrics.Metrics
 	AdminToken string
 	MaxBody    int64
 	Logger     *slog.Logger
@@ -41,6 +44,7 @@ func NewServer(cfg Config) *Server {
 		store:      cfg.Store,
 		capturer:   cfg.Capturer,
 		sources:    cfg.Sources,
+		metrics:    cfg.Metrics,
 		adminToken: cfg.AdminToken,
 		maxBody:    cfg.MaxBody,
 		logger:     cfg.Logger,
@@ -60,6 +64,10 @@ func (s *Server) Handler() http.Handler {
 	mux.Handle("GET /events/{id}", s.admin(s.handleGetEvent))
 	mux.Handle("POST /events/{id}/replay", s.admin(s.handleReplay))
 	mux.Handle("GET /deadletters", s.admin(s.handleListDeadLetters))
+
+	if s.metrics != nil {
+		mux.Handle("GET /metrics", s.admin(s.metrics.Handler().ServeHTTP))
+	}
 
 	mux.Handle("GET /sources", s.admin(s.handleListSources))
 	mux.Handle("POST /sources", s.admin(s.handleCreateSource))

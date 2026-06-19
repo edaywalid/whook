@@ -14,6 +14,7 @@ import (
 	"github.com/edaywalid/whook/internal/crypto"
 	"github.com/edaywalid/whook/internal/delivery"
 	"github.com/edaywalid/whook/internal/ingest"
+	"github.com/edaywalid/whook/internal/metrics"
 	"github.com/edaywalid/whook/internal/pruner"
 	"github.com/edaywalid/whook/internal/retry"
 	"github.com/edaywalid/whook/internal/signature"
@@ -36,6 +37,7 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 		return err
 	}
 
+	metricsCollector := metrics.New()
 	verifiers := signature.NewRegistry()
 	sources := source.NewService(store, sealer, verifiers)
 	capturer := ingest.NewCapturer(store, sources, verifiers, logger)
@@ -45,6 +47,7 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 		Concurrency:  cfg.Workers,
 		PollInterval: cfg.PollInterval,
 		Backoff:      retry.DefaultBackoff,
+		Metrics:      metricsCollector,
 	})
 
 	retentionPruner := pruner.New(store, logger, pruner.Options{
@@ -57,6 +60,7 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 		Store:      store,
 		Capturer:   capturer,
 		Sources:    sources,
+		Metrics:    metricsCollector,
 		AdminToken: cfg.AdminToken,
 		MaxBody:    cfg.MaxBodyBytes,
 		Logger:     logger,

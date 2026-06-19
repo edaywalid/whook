@@ -17,12 +17,24 @@ import (
 	"github.com/edaywalid/whook/internal/storage"
 )
 
+// Recorder receives delivery telemetry. *metrics.Metrics satisfies it.
+type Recorder interface {
+	RecordDelivery(outcome string)
+	RecordDeadLetter()
+}
+
+type noopRecorder struct{}
+
+func (noopRecorder) RecordDelivery(string) {}
+func (noopRecorder) RecordDeadLetter()     {}
+
 // Options configures the worker pool.
 type Options struct {
 	Concurrency  int
 	PollInterval time.Duration
 	Lease        time.Duration
 	Backoff      core.BackoffConfig
+	Metrics      Recorder
 }
 
 // Worker drains the queue using an injected delivery engine.
@@ -48,6 +60,9 @@ func New(store storage.Store, engine *delivery.Engine, logger *slog.Logger, opts
 	}
 	if opts.Backoff.MaxAttempts == 0 {
 		opts.Backoff = retry.DefaultBackoff
+	}
+	if opts.Metrics == nil {
+		opts.Metrics = noopRecorder{}
 	}
 	return &Worker{
 		store:  store,
@@ -128,10 +143,13 @@ func (w *Worker) process(ctx context.Context, pending core.PendingDelivery) {
 }
 
 func (w *Worker) settle(ctx context.Context, pending core.PendingDelivery, dest core.Destination, attempt int, res delivery.Result) {
+	w.opts.Metrics.RecordDelivery(string(res.Outcome))
+
 	switch res.Outcome {
 	case core.OutcomeSuccess:
 		w.mark(ctx, w.store.MarkDelivered, pending.ID, "delivered")
 	case core.OutcomePermanent:
+		w.opts.Metrics.RecordDeadLetter()
 		w.mark(ctx, w.store.MarkDeadLetter, pending.ID, "dead-letter")
 	case core.OutcomeRetryable:
 		w.reschedule(ctx, pending, dest, attempt, res.RetryAfter)
@@ -146,6 +164,7 @@ func (w *Worker) reschedule(ctx context.Context, pending core.PendingDelivery, d
 
 	plan := retry.Next(cfg, attempt, retryAfter)
 	if plan.DeadLetter {
+		w.opts.Metrics.RecordDeadLetter()
 		w.mark(ctx, w.store.MarkDeadLetter, pending.ID, "dead-letter")
 		return
 	}

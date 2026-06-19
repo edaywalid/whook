@@ -38,7 +38,9 @@ func (s *Server) handleIngest(w http.ResponseWriter, r *http.Request) {
 		SourceIP: clientIP(r),
 	}
 
-	res, err := s.capturer.Capture(r.Context(), r.PathValue("source"), req)
+	source := r.PathValue("source")
+	start := s.now()
+	res, err := s.capturer.Capture(r.Context(), source, req)
 	if errors.Is(err, ingest.ErrSourceNotFound) {
 		writeError(w, http.StatusNotFound, "unknown source")
 		return
@@ -47,6 +49,10 @@ func (s *Server) handleIngest(w http.ResponseWriter, r *http.Request) {
 		s.logger.Error("capturing webhook", "error", err)
 		writeError(w, http.StatusInternalServerError, "capture failed")
 		return
+	}
+
+	if s.metrics != nil {
+		s.metrics.RecordCapture(source, captureStatus(res.Accepted), s.now().Sub(start).Seconds())
 	}
 
 	if !res.Accepted {
@@ -329,6 +335,13 @@ func clientIP(r *http.Request) string {
 		return r.RemoteAddr
 	}
 	return host
+}
+
+func captureStatus(accepted bool) string {
+	if accepted {
+		return "received"
+	}
+	return "rejected"
 }
 
 func atoiDefault(s string, def int) int {
