@@ -42,6 +42,12 @@ func (r *Registry) Register(name string, v Verifier) {
 	r.verifiers[name] = v
 }
 
+// Has reports whether a verifier is registered under the given name.
+func (r *Registry) Has(name string) bool {
+	_, ok := r.verifiers[name]
+	return ok
+}
+
 // Verify runs the named verifier. An empty provider name means the source opted
 // out of verification, so the request is accepted.
 func (r *Registry) Verify(provider string, secret []byte, req Request) error {
