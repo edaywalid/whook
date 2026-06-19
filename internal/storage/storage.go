@@ -54,5 +54,15 @@ type Store interface {
 	Reschedule(ctx context.Context, id string, attempt int, next time.Time) error
 	MarkDeadLetter(ctx context.Context, id string) error
 
+	// DeliveriesForEvent returns the per-destination delivery rows for an event.
+	DeliveriesForEvent(ctx context.Context, eventID string) ([]core.PendingDelivery, error)
+	// ListDeadLetters returns dead-lettered deliveries, newest first.
+	ListDeadLetters(ctx context.Context, limit, offset int) ([]core.PendingDelivery, error)
+
+	// Prune deletes events older than normalCutoff (and their attempts and
+	// queue rows). Rejected and dead-lettered events are kept until the longer
+	// failedCutoff. It returns the number of events deleted.
+	Prune(ctx context.Context, normalCutoff, failedCutoff time.Time) (int, error)
+
 	Close() error
 }

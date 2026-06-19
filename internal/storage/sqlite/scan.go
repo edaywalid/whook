@@ -65,6 +65,12 @@ func scanDestination(row scanner) (core.Destination, error) {
 	return d, nil
 }
 
+func scanPending(row scanner) (core.PendingDelivery, error) {
+	var p core.PendingDelivery
+	err := row.Scan(&p.ID, &p.EventID, &p.DestinationID, &p.AttemptNumber, &p.NextAttemptAt, &p.State, &p.IsReplay)
+	return p, err
+}
+
 // marshalDestination serializes the nullable JSON columns of a destination.
 func marshalDestination(d core.Destination) (filter, backoff any, err error) {
 	if d.FilterSpec != nil {
