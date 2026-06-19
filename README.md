@@ -139,6 +139,7 @@ pass it as `Authorization: Bearer <token>` (or `?token=` for the dashboard).
 | --- | --- |
 | `POST /ingest/{source}` | Capture an inbound webhook (public) |
 | `GET /healthz` | Liveness check (public) |
+| `GET /metrics` | Prometheus metrics (ingest, delivery, dead-letter) |
 | `GET /events` | List captured events |
 | `GET /events/{id}` | Event detail with per-destination delivery state and attempt history |
 | `POST /events/{id}/replay` | Re-deliver an event (optional `?destination_id=`) |
