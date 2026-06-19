@@ -1,0 +1,21 @@
+# Build output
+/whook
+/bin/
+
+# Local data
+*.db
+*.db-shm
+*.db-wal
+/data/
+
+# Env
+.env
+.env.local
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Working docs (kept local, not committed)
+PRD.md
