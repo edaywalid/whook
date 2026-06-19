@@ -30,7 +30,7 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	defer store.Close()
+	defer func() { _ = store.Close() }()
 
 	sealer, err := crypto.NewSealer(cfg.SecretKey)
 	if err != nil {
