@@ -67,9 +67,6 @@ others.
 
 ![Fan-out: one captured event delivered to billing, email, and analytics, each an independent track with its own delivered, retrying, or dead-lettered status](docs/diagrams/assets/fan-out.png)
 
-The diagrams above are generated from standalone HTML sources in
-[`docs/diagrams/`](docs/diagrams/) (open [`index.html`](docs/diagrams/index.html)).
-
 ## Stack
 
 - Go, single static binary
