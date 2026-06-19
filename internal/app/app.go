@@ -14,6 +14,7 @@ import (
 	"github.com/edaywalid/whook/internal/crypto"
 	"github.com/edaywalid/whook/internal/delivery"
 	"github.com/edaywalid/whook/internal/ingest"
+	"github.com/edaywalid/whook/internal/pruner"
 	"github.com/edaywalid/whook/internal/retry"
 	"github.com/edaywalid/whook/internal/signature"
 	"github.com/edaywalid/whook/internal/source"
@@ -46,6 +47,12 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 		Backoff:      retry.DefaultBackoff,
 	})
 
+	retentionPruner := pruner.New(store, logger, pruner.Options{
+		RetentionAge:       cfg.RetentionAge,
+		FailedRetentionAge: cfg.FailedRetentionAge,
+		Interval:           cfg.PruneInterval,
+	})
+
 	srv := api.NewServer(api.Config{
 		Store:      store,
 		Capturer:   capturer,
@@ -66,6 +73,14 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 			errCh <- err
 		}
 	}()
+	go func() {
+		if err := retentionPruner.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			errCh <- err
+		}
+	}()
+	if retentionPruner.Enabled() {
+		logger.Info("retention pruning enabled", "retention", cfg.RetentionAge, "interval", cfg.PruneInterval)
+	}
 	go func() {
 		logger.Info("http server listening", "addr", cfg.Addr)
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {

@@ -31,6 +31,13 @@ type Config struct {
 	// Delivery worker settings.
 	Workers      int
 	PollInterval time.Duration
+
+	// Retention. RetentionAge is how long received events are kept; zero
+	// disables pruning entirely. FailedRetentionAge keeps rejected and
+	// dead-lettered events longer for debugging; it defaults to RetentionAge.
+	RetentionAge       time.Duration
+	FailedRetentionAge time.Duration
+	PruneInterval      time.Duration
 }
 
 // Load reads configuration from the environment, applying defaults.
@@ -43,6 +50,15 @@ func Load() (Config, error) {
 		MaxBodyBytes: envInt64("WHOOK_MAX_BODY_BYTES", 1<<20), // 1 MiB
 		Workers:      int(envInt64("WHOOK_WORKERS", 4)),
 		PollInterval: envDuration("WHOOK_POLL_INTERVAL", time.Second),
+
+		RetentionAge:       envDuration("WHOOK_RETENTION_AGE", 0),
+		FailedRetentionAge: envDuration("WHOOK_FAILED_RETENTION_AGE", 0),
+		PruneInterval:      envDuration("WHOOK_PRUNE_INTERVAL", time.Hour),
+	}
+
+	// Failed events are kept at least as long as received ones.
+	if c.FailedRetentionAge < c.RetentionAge {
+		c.FailedRetentionAge = c.RetentionAge
 	}
 
 	if c.Workers < 1 {
