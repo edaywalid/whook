@@ -17,6 +17,7 @@ import (
 	"github.com/edaywalid/whook/internal/ingest"
 	"github.com/edaywalid/whook/internal/metrics"
 	"github.com/edaywalid/whook/internal/pruner"
+	"github.com/edaywalid/whook/internal/ratelimit"
 	"github.com/edaywalid/whook/internal/retry"
 	"github.com/edaywalid/whook/internal/signature"
 	"github.com/edaywalid/whook/internal/source"
@@ -61,13 +62,14 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 	})
 
 	srv := api.NewServer(api.Config{
-		Store:      store,
-		Capturer:   capturer,
-		Sources:    sources,
-		Metrics:    metricsCollector,
-		AdminToken: cfg.AdminToken,
-		MaxBody:    cfg.MaxBodyBytes,
-		Logger:     logger,
+		Store:         store,
+		Capturer:      capturer,
+		Sources:       sources,
+		Metrics:       metricsCollector,
+		IngestLimiter: ratelimit.New(cfg.IngestRate, cfg.IngestBurst),
+		AdminToken:    cfg.AdminToken,
+		MaxBody:       cfg.MaxBodyBytes,
+		Logger:        logger,
 	})
 	httpServer := &http.Server{
 		Addr:              cfg.Addr,

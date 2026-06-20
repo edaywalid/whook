@@ -149,6 +149,8 @@ All settings come from environment variables.
 | `WHOOK_RETENTION_AGE` | empty | Delete received events older than this (e.g. `720h`). Empty disables pruning |
 | `WHOOK_FAILED_RETENTION_AGE` | = retention | Keep rejected and dead-lettered events longer |
 | `WHOOK_PRUNE_INTERVAL` | `1h` | How often the pruner runs |
+| `WHOOK_INGEST_RATE` | `0` | Max ingest requests per second per source. `0` disables limiting |
+| `WHOOK_INGEST_BURST` | = rate | Token-bucket burst size for ingest limiting |
 
 ### Postgres
 

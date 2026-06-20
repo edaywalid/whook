@@ -38,6 +38,12 @@ type Config struct {
 	RetentionAge       time.Duration
 	FailedRetentionAge time.Duration
 	PruneInterval      time.Duration
+
+	// Ingest rate limiting, per source. IngestRate is requests per second; zero
+	// disables limiting. IngestBurst is the bucket size; zero defaults to one
+	// second of capacity.
+	IngestRate  float64
+	IngestBurst int
 }
 
 // Load reads configuration from the environment, applying defaults.
@@ -54,6 +60,9 @@ func Load() (Config, error) {
 		RetentionAge:       envDuration("WHOOK_RETENTION_AGE", 0),
 		FailedRetentionAge: envDuration("WHOOK_FAILED_RETENTION_AGE", 0),
 		PruneInterval:      envDuration("WHOOK_PRUNE_INTERVAL", time.Hour),
+
+		IngestRate:  envFloat("WHOOK_INGEST_RATE", 0),
+		IngestBurst: int(envInt64("WHOOK_INGEST_BURST", 0)),
 	}
 
 	// Failed events are kept at least as long as received ones.
@@ -75,6 +84,18 @@ func envStr(key, def string) string {
 		return v
 	}
 	return def
+}
+
+func envFloat(key string, def float64) float64 {
+	v, ok := os.LookupEnv(key)
+	if !ok {
+		return def
+	}
+	f, err := strconv.ParseFloat(v, 64)
+	if err != nil {
+		return def
+	}
+	return f
 }
 
 func envInt64(key string, def int64) int64 {

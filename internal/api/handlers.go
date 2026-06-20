@@ -18,6 +18,12 @@ import (
 )
 
 func (s *Server) handleIngest(w http.ResponseWriter, r *http.Request) {
+	if !s.ingestLimit.Allow(r.PathValue("source")) {
+		w.Header().Set("Retry-After", "1")
+		writeError(w, http.StatusTooManyRequests, "rate limit exceeded for this source")
+		return
+	}
+
 	body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, s.maxBody))
 	if err != nil {
 		var tooLarge *http.MaxBytesError

@@ -11,44 +11,48 @@ import (
 
 	"github.com/edaywalid/whook/internal/ingest"
 	"github.com/edaywalid/whook/internal/metrics"
+	"github.com/edaywalid/whook/internal/ratelimit"
 	"github.com/edaywalid/whook/internal/source"
 	"github.com/edaywalid/whook/internal/storage"
 )
 
 // Server holds the API dependencies.
 type Server struct {
-	store      storage.Store
-	capturer   *ingest.Capturer
-	sources    *source.Service
-	metrics    *metrics.Metrics
-	adminToken string
-	maxBody    int64
-	logger     *slog.Logger
-	now        func() time.Time
+	store       storage.Store
+	capturer    *ingest.Capturer
+	sources     *source.Service
+	metrics     *metrics.Metrics
+	ingestLimit *ratelimit.Limiter
+	adminToken  string
+	maxBody     int64
+	logger      *slog.Logger
+	now         func() time.Time
 }
 
 // Config wires a Server.
 type Config struct {
-	Store      storage.Store
-	Capturer   *ingest.Capturer
-	Sources    *source.Service
-	Metrics    *metrics.Metrics
-	AdminToken string
-	MaxBody    int64
-	Logger     *slog.Logger
+	Store         storage.Store
+	Capturer      *ingest.Capturer
+	Sources       *source.Service
+	Metrics       *metrics.Metrics
+	IngestLimiter *ratelimit.Limiter
+	AdminToken    string
+	MaxBody       int64
+	Logger        *slog.Logger
 }
 
 // NewServer builds a Server.
 func NewServer(cfg Config) *Server {
 	return &Server{
-		store:      cfg.Store,
-		capturer:   cfg.Capturer,
-		sources:    cfg.Sources,
-		metrics:    cfg.Metrics,
-		adminToken: cfg.AdminToken,
-		maxBody:    cfg.MaxBody,
-		logger:     cfg.Logger,
-		now:        func() time.Time { return time.Now().UTC() },
+		store:       cfg.Store,
+		capturer:    cfg.Capturer,
+		sources:     cfg.Sources,
+		metrics:     cfg.Metrics,
+		ingestLimit: cfg.IngestLimiter,
+		adminToken:  cfg.AdminToken,
+		maxBody:     cfg.MaxBody,
+		logger:      cfg.Logger,
+		now:         func() time.Time { return time.Now().UTC() },
 	}
 }
 
