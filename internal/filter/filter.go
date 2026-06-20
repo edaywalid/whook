@@ -4,6 +4,7 @@ package filter
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/edaywalid/whook/internal/core"
@@ -23,20 +24,52 @@ func Matches(spec *core.FilterSpec, e core.Event) bool {
 		}
 	}
 
-	if len(spec.BodyEquals) > 0 {
-		body, ok := parseJSONObject(e.Body)
-		if !ok {
+	if !needsBody(spec) {
+		return true
+	}
+	body, ok := parseJSONObject(e.Body)
+	if !ok {
+		return false
+	}
+	return matchesBody(spec, body)
+}
+
+func matchesBody(spec *core.FilterSpec, body map[string]any) bool {
+	for path, want := range spec.BodyEquals {
+		if got, found := lookup(body, path); !found || valueString(got) != want {
 			return false
 		}
-		for path, want := range spec.BodyEquals {
-			got, found := lookup(body, path)
-			if !found || valueString(got) != want {
-				return false
-			}
+	}
+	for _, path := range spec.BodyExists {
+		if _, found := lookup(body, path); !found {
+			return false
 		}
 	}
-
+	for path, allowed := range spec.BodyIn {
+		got, found := lookup(body, path)
+		if !found || !slices.Contains(allowed, valueString(got)) {
+			return false
+		}
+	}
+	for path, prefix := range spec.BodyPrefix {
+		got, found := lookup(body, path)
+		if !found || !strings.HasPrefix(valueString(got), prefix) {
+			return false
+		}
+	}
+	for path, notWant := range spec.BodyNot {
+		// A field that equals the value fails. A missing field passes, since it
+		// does not equal anything.
+		if got, found := lookup(body, path); found && valueString(got) == notWant {
+			return false
+		}
+	}
 	return true
+}
+
+func needsBody(spec *core.FilterSpec) bool {
+	return len(spec.BodyEquals) > 0 || len(spec.BodyExists) > 0 ||
+		len(spec.BodyIn) > 0 || len(spec.BodyPrefix) > 0 || len(spec.BodyNot) > 0
 }
 
 func headerEquals(headers map[string][]string, name, want string) bool {
