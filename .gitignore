@@ -19,3 +19,6 @@
 
 # Working docs (kept local, not committed)
 PRD.md
+
+# Local Netlify folder
+.netlify
