@@ -35,15 +35,20 @@ type Options struct {
 	Lease        time.Duration
 	Backoff      core.BackoffConfig
 	Metrics      Recorder
+	// DrainTimeout bounds how long Run waits for in-flight deliveries to finish
+	// after the context is cancelled before force-cancelling them.
+	DrainTimeout time.Duration
 }
 
 // Worker drains the queue using an injected delivery engine.
 type Worker struct {
-	store  storage.Store
-	engine *delivery.Engine
-	logger *slog.Logger
-	opts   Options
-	now    func() time.Time
+	store    storage.Store
+	engine   *delivery.Engine
+	logger   *slog.Logger
+	opts     Options
+	now      func() time.Time
+	sem      chan struct{}
+	inFlight sync.WaitGroup
 }
 
 // New builds a worker. Concurrency, PollInterval, and Lease fall back to sane
@@ -64,32 +69,69 @@ func New(store storage.Store, engine *delivery.Engine, logger *slog.Logger, opts
 	if opts.Metrics == nil {
 		opts.Metrics = noopRecorder{}
 	}
+	if opts.DrainTimeout <= 0 {
+		opts.DrainTimeout = 25 * time.Second
+	}
 	return &Worker{
 		store:  store,
 		engine: engine,
 		logger: logger,
 		opts:   opts,
 		now:    func() time.Time { return time.Now().UTC() },
+		sem:    make(chan struct{}, opts.Concurrency),
 	}
 }
 
-// Run polls the queue until the context is cancelled.
+// Run polls the queue until ctx is cancelled, then stops claiming new work and
+// lets in-flight deliveries finish (up to DrainTimeout) before returning.
+// Deliveries run on a context independent of ctx so they survive shutdown.
 func (w *Worker) Run(ctx context.Context) error {
+	workCtx, cancelWork := context.WithCancel(context.Background())
+	defer cancelWork()
+
 	ticker := time.NewTicker(w.opts.PollInterval)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			ticker.Stop()
+			w.drain(cancelWork)
+			return nil
 		case <-ticker.C:
-			w.tick(ctx)
+			w.tick(workCtx)
 		}
 	}
 }
 
+// drain waits for in-flight deliveries to finish, force-cancelling them if they
+// exceed DrainTimeout.
+func (w *Worker) drain(cancelWork context.CancelFunc) {
+	done := make(chan struct{})
+	go func() {
+		w.inFlight.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		w.logger.Info("delivery drain complete")
+	case <-time.After(w.opts.DrainTimeout):
+		w.logger.Warn("delivery drain timed out; cancelling in-flight deliveries")
+		cancelWork()
+		w.inFlight.Wait()
+	}
+}
+
+// tick claims up to the number of free worker slots and starts each delivery,
+// without blocking, so Run stays responsive to shutdown.
 func (w *Worker) tick(ctx context.Context) {
-	due, err := w.store.ClaimDue(ctx, w.now(), w.opts.Lease, w.opts.Concurrency)
+	free := cap(w.sem) - len(w.sem)
+	if free <= 0 {
+		return
+	}
+
+	due, err := w.store.ClaimDue(ctx, w.now(), w.opts.Lease, free)
 	if err != nil {
 		if !errors.Is(err, context.Canceled) {
 			w.logger.Error("claiming due deliveries", "error", err)
@@ -97,15 +139,17 @@ func (w *Worker) tick(ctx context.Context) {
 		return
 	}
 
-	var wg sync.WaitGroup
 	for _, pending := range due {
-		wg.Add(1)
+		w.sem <- struct{}{}
+		w.inFlight.Add(1)
 		go func(p core.PendingDelivery) {
-			defer wg.Done()
+			defer func() {
+				<-w.sem
+				w.inFlight.Done()
+			}()
 			w.process(ctx, p)
 		}(pending)
 	}
-	wg.Wait()
 }
 
 func (w *Worker) process(ctx context.Context, pending core.PendingDelivery) {

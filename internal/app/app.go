@@ -76,7 +76,9 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 	}
 
 	errCh := make(chan error, 2)
+	workerDone := make(chan struct{})
 	go func() {
+		defer close(workerDone)
 		if err := deliveryWorker.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 			errCh <- err
 		}
@@ -107,6 +109,13 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 	defer cancel()
 	if err := httpServer.Shutdown(shutdownCtx); err != nil {
 		logger.Error("http shutdown", "error", err)
+	}
+
+	// Let the worker finish draining in-flight deliveries before exiting.
+	select {
+	case <-workerDone:
+	case <-time.After(30 * time.Second):
+		logger.Warn("worker did not drain in time")
 	}
 	return nil
 }
