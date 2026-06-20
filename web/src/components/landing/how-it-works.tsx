@@ -40,7 +40,7 @@ export function HowItWorks() {
         </Reveal>
 
         <Reveal delay={0.1} y={28}>
-          <figure className="mt-12 rounded-2xl border border-hairline bg-surface px-4 py-8 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.7),0_0_90px_-25px_rgba(45,212,191,0.32)] sm:px-10">
+          <figure className="mt-12 rounded-2xl border border-hairline bg-surface px-4 py-8 shadow-[0_24px_50px_-30px_rgba(0,0,0,0.6)] sm:px-10">
             <ArchitectureFlow />
           </figure>
         </Reveal>

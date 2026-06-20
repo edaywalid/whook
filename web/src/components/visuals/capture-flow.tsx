@@ -73,7 +73,7 @@ export function CaptureFlow() {
         <text x="300" y="158" textAnchor="middle" className="fill-white text-[18px] font-semibold">
           whook
         </text>
-        <rect x="258" y="172" width="84" height="24" rx="12" className="breathe fill-white/15" />
+        <rect x="258" y="172" width="84" height="24" rx="12" className="fill-white/15" />
         <text x="300" y="188" textAnchor="middle" className="fill-white font-mono text-[11px]">
           captured
         </text>

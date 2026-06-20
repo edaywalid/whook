@@ -10,10 +10,6 @@ export function CallToAction() {
       <Reveal y={28}>
         <div className="relative overflow-hidden rounded-3xl bg-surface-2 px-8 py-16 ring-1 ring-white/10 sm:px-16 sm:py-20">
           <div className="bg-grid pointer-events-none absolute inset-0 opacity-60" />
-          <div
-            className="pointer-events-none absolute -top-28 -right-20 size-96 rounded-full opacity-50 blur-3xl"
-            style={{ background: 'radial-gradient(circle, #2dd4bf 0%, transparent 70%)' }}
-          />
           <div className="relative grid items-center gap-12 lg:grid-cols-2">
             <div>
               <h2 className="max-w-[18ch] text-3xl font-semibold tracking-tight text-ink sm:text-5xl">
@@ -26,7 +22,7 @@ export function CallToAction() {
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <a
                   href={REPO_URL}
-                  className="pressable inline-flex items-center gap-2 rounded-full bg-teal-bright px-6 py-3 text-sm font-semibold text-[#06201d] shadow-[0_10px_34px_-8px_rgba(45,212,191,0.6)] transition-colors hover:bg-[#5fe3d3]"
+                  className="pressable inline-flex items-center gap-2 rounded-full bg-teal-bright px-6 py-3 text-sm font-semibold text-[#06201d] transition-colors hover:bg-[#5fe3d3]"
                 >
                   <Github className="size-4" strokeWidth={2} />
                   Get whook on GitHub

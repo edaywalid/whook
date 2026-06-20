@@ -8,7 +8,7 @@ export function Resilience() {
     <section className="mx-auto max-w-[1200px] px-6 py-24 lg:py-28">
       <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
         <Reveal y={28} className="order-2 lg:order-1">
-          <figure className="rounded-2xl border border-hairline bg-surface px-4 py-8 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.7),0_0_90px_-25px_rgba(45,212,191,0.3)] sm:px-7">
+          <figure className="rounded-2xl border border-hairline bg-surface px-4 py-8 shadow-[0_24px_50px_-30px_rgba(0,0,0,0.6)] sm:px-7">
             <RetryTimeline />
           </figure>
         </Reveal>

@@ -94,25 +94,6 @@
   background-size: 56px 56px;
 }
 
-/* Soft teal radial glow, placed behind hero and key moments. */
-.glow-teal {
-  background: radial-gradient(
-    closest-side,
-    rgb(45 212 191 / 0.22),
-    transparent 78%
-  );
-}
-
-/* Fine grain over the whole page so the dark never reads as flat. */
-.grain {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
 /* Scroll reveal that enhances an already-visible default. Content is opacity 1
    unless the browser supports scroll-driven animations and motion is allowed,
    so it never ships blank in a headless render, a prerender, or with slow JS. */
@@ -149,9 +130,6 @@
   .pressable:active {
     transform: none;
   }
-  .grain {
-    display: none;
-  }
 }
 
 /* Flowing dashes on the coded diagram connectors, to imply direction of flow.
@@ -159,15 +137,6 @@
 @keyframes flow-dash {
   to {
     stroke-dashoffset: -240;
-  }
-}
-@keyframes node-breathe {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
-  50% {
-    opacity: 1;
   }
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -178,8 +147,5 @@
   .flow-slow {
     stroke-dasharray: 4 8;
     animation: flow-dash 9s linear infinite;
-  }
-  .breathe {
-    animation: node-breathe 2.6s ease-in-out infinite;
   }
 }

@@ -53,7 +53,6 @@ function RootDocument({ children }: { children: ReactNode }) {
       </head>
       <body>
         {children}
-        <div className="grain" aria-hidden="true" />
         <Scripts />
       </body>
     </html>
