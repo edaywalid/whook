@@ -4,7 +4,8 @@ package db
 
 import "embed"
 
-// Migrations holds the dbmate-authored migration files.
+// Migrations holds the dbmate-authored migration files, split by dialect
+// (migrations/sqlite, migrations/postgres).
 //
-//go:embed migrations/*.sql
+//go:embed migrations/sqlite/*.sql migrations/postgres/*.sql
 var Migrations embed.FS

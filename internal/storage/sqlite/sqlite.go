@@ -35,7 +35,7 @@ func Open(ctx context.Context, dsn string) (*Store, error) {
 	if err := db.PingContext(ctx); err != nil {
 		return nil, fmt.Errorf("pinging sqlite: %w", err)
 	}
-	if err := migrate.Run(db); err != nil {
+	if err := migrate.Run(db, migrate.SQLite); err != nil {
 		return nil, fmt.Errorf("running migrations: %w", err)
 	}
 	return &Store{db: db}, nil

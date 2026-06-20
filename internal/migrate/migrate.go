@@ -1,5 +1,6 @@
 // Package migrate applies the embedded dbmate migrations to a database on
-// startup, so the gateway stays a single self-contained binary.
+// startup, so the gateway stays a single self-contained binary. Migrations are
+// split by dialect (sqlite, postgres) since the schema SQL differs.
 package migrate
 
 import (
@@ -12,9 +13,22 @@ import (
 	"github.com/edaywalid/whook/db"
 )
 
-// Run applies any not-yet-applied migrations in version order. It is safe to
-// call on every startup; already-applied migrations are skipped.
-func Run(conn *sql.DB) error {
+// Dialect names the migration set and the placeholder style to apply.
+type Dialect struct {
+	dir         string
+	placeholder string
+}
+
+var (
+	// SQLite uses migrations/sqlite and "?" placeholders.
+	SQLite = Dialect{dir: "migrations/sqlite", placeholder: "?"}
+	// Postgres uses migrations/postgres and "$1" placeholders.
+	Postgres = Dialect{dir: "migrations/postgres", placeholder: "$1"}
+)
+
+// Run applies any not-yet-applied migrations for the dialect in version order.
+// It is safe to call on every startup; already-applied migrations are skipped.
+func Run(conn *sql.DB, d Dialect) error {
 	if _, err := conn.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (version TEXT PRIMARY KEY)`); err != nil {
 		return fmt.Errorf("create schema_migrations: %w", err)
 	}
@@ -24,7 +38,7 @@ func Run(conn *sql.DB) error {
 		return err
 	}
 
-	files, err := fs.Glob(db.Migrations, "migrations/*.sql")
+	files, err := fs.Glob(db.Migrations, d.dir+"/*.sql")
 	if err != nil {
 		return fmt.Errorf("list migrations: %w", err)
 	}
@@ -39,25 +53,28 @@ func Run(conn *sql.DB) error {
 		if err != nil {
 			return fmt.Errorf("read %s: %w", f, err)
 		}
-		up := upSection(string(raw))
-		if err := applyOne(conn, version, up); err != nil {
+		if err := applyOne(conn, version, upSection(string(raw)), d.placeholder); err != nil {
 			return fmt.Errorf("apply %s: %w", version, err)
 		}
 	}
 	return nil
 }
 
-func applyOne(conn *sql.DB, version, up string) error {
+func applyOne(conn *sql.DB, version, up, placeholder string) error {
 	tx, err := conn.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
-	if _, err := tx.Exec(up); err != nil {
-		return err
+	// Exec one statement at a time: the Postgres driver does not run a
+	// multi-statement string through a single Exec.
+	for _, stmt := range splitStatements(up) {
+		if _, err := tx.Exec(stmt); err != nil {
+			return fmt.Errorf("statement %q: %w", truncate(stmt, 60), err)
+		}
 	}
-	if _, err := tx.Exec(`INSERT INTO schema_migrations (version) VALUES (?)`, version); err != nil {
+	if _, err := tx.Exec(`INSERT INTO schema_migrations (version) VALUES (`+placeholder+`)`, version); err != nil {
 		return err
 	}
 	return tx.Commit()
@@ -100,4 +117,34 @@ func upSection(content string) string {
 		return strings.TrimSpace(up)
 	}
 	return strings.TrimSpace(rest)
+}
+
+// splitStatements breaks a migration body into individual statements on `;`.
+// Line comments are stripped first so a semicolon inside a comment does not
+// split a statement. The schema uses plain DDL with no semicolons in string
+// literals, so this is correct here.
+func splitStatements(up string) []string {
+	var stripped strings.Builder
+	for line := range strings.Lines(up) {
+		if i := strings.Index(line, "--"); i >= 0 {
+			line = line[:i] + "\n"
+		}
+		stripped.WriteString(line)
+	}
+
+	var out []string
+	for raw := range strings.SplitSeq(stripped.String(), ";") {
+		if stmt := strings.TrimSpace(raw); stmt != "" {
+			out = append(out, stmt)
+		}
+	}
+	return out
+}
+
+func truncate(s string, n int) string {
+	s = strings.Join(strings.Fields(s), " ")
+	if len(s) <= n {
+		return s
+	}
+	return s[:n] + "…"
 }
