@@ -1,0 +1,45 @@
+# Installation
+
+whook is a single static Go binary with SQLite built in, so most installs are a
+single command. It listens on `:8080` and stores events in a local SQLite file by
+default.
+
+## Docker
+
+Prebuilt multi-arch images (`linux/amd64`, `linux/arm64`) are published to GitHub
+Container Registry on every push to `main` and every `v*` tag.
+
+```sh
+docker run -p 8080:8080 -v whook-data:/data ghcr.io/edaywalid/whook:latest
+```
+
+## Docker Compose
+
+The bundled `docker-compose.yml` builds from source and persists data in a named
+volume. It also has an optional Postgres profile.
+
+```sh
+cp .env.example .env   # set WHOOK_ADMIN_TOKEN and WHOOK_SECRET_KEY
+docker compose up --build -d
+```
+
+## From source
+
+Requires Go 1.25 or newer.
+
+```sh
+go install github.com/edaywalid/whook/cmd/whook@latest
+whook
+```
+
+Or from a clone:
+
+```sh
+git clone https://github.com/edaywalid/whook
+cd whook
+go build -o whook ./cmd/whook
+./whook
+```
+
+The gateway applies its database migrations on startup, so there is no separate
+migrate step. Next: [Configuration](/docs/configuration).

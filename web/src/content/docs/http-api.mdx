@@ -1,0 +1,58 @@
+# HTTP API
+
+The gateway exposes one public ingest endpoint, a JSON management API, and a thin
+server-rendered dashboard. With `WHOOK_ADMIN_TOKEN` set, every endpoint except
+ingest and health requires the bearer token.
+
+## Endpoints
+
+| Method and path | Purpose |
+| --- | --- |
+| `POST /ingest/{source}` | Capture an inbound webhook (public) |
+| `GET /healthz` | Liveness check (public) |
+| `GET /metrics` | Prometheus metrics (ingest, delivery, dead-letter) |
+| `GET /events` | List captured events (`?source=`, `?status=`, `?limit=`, `?offset=`) |
+| `GET /events/{id}` | Event detail with per-destination delivery state and attempts |
+| `POST /events/{id}/replay` | Re-deliver an event (optional `?destination_id=`) |
+| `GET /deadletters` | List deliveries that exhausted their retry budget |
+| `GET /sources` | List registered sources |
+| `POST /sources` | Register a source |
+| `PATCH /sources/{name}` | Update a source |
+| `GET /destinations?source=` | List a source's destinations |
+| `POST /destinations` | Create a destination |
+| `PATCH /destinations/{id}` | Update a destination (including enable/disable) |
+
+## Capturing a webhook
+
+```sh
+curl -X POST localhost:8080/ingest/stripe \
+  -H 'Content-Type: application/json' \
+  -d '{"type":"payment.succeeded","amount":4900}'
+# -> {"event_id":"evt_9f3a21c8b4e07d56"}
+```
+
+The gateway responds with a fast `200` and the event id once the request is durably
+stored. A request that fails signature verification is still captured (status
+`rejected`) and returns `401`. An unregistered source returns `404`, a body over
+the size limit returns `413`, and an over-the-rate-limit source returns `429`.
+
+## Replay
+
+```sh
+# Replay to every destination of the event
+curl -X POST localhost:8080/events/evt_9f3a.../replay
+
+# Replay to a single destination
+curl -X POST 'localhost:8080/events/evt_9f3a.../replay?destination_id=dst_...'
+```
+
+A replay enqueues a fresh delivery with its own retry budget and is recorded as a
+replay attempt, leaving the original history intact. This is how you recover a
+dead-lettered event after fixing the underlying cause.
+
+## Dashboard
+
+`GET /ui` serves a dashboard that lists events, links to a per-event detail page
+(payload, per-destination delivery state, attempt history, and a replay button),
+and has a dead-letter view. With an admin token set, pass it as
+`Authorization: Bearer <token>` or `?token=<token>`.

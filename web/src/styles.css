@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* whook brand system, dark. Near-black teal-charcoal ground, bright teal accent,
    and a set of light "card" tokens so the coded diagrams stay bright and float
@@ -148,4 +149,62 @@
     stroke-dasharray: 4 8;
     animation: flow-dash 9s linear infinite;
   }
+}
+
+/* Docs content: theme @tailwindcss/typography for the dark brand and tidy the
+   shiki-highlighted code blocks. */
+.docs-prose {
+  --tw-prose-body: var(--color-body);
+  --tw-prose-headings: var(--color-ink);
+  --tw-prose-lead: var(--color-body);
+  --tw-prose-links: var(--color-teal-bright);
+  --tw-prose-bold: var(--color-ink);
+  --tw-prose-counters: var(--color-muted);
+  --tw-prose-bullets: var(--color-muted);
+  --tw-prose-hr: var(--color-hairline);
+  --tw-prose-quotes: var(--color-body);
+  --tw-prose-quote-borders: var(--color-hairline);
+  --tw-prose-code: var(--color-ink);
+  --tw-prose-th-borders: var(--color-hairline);
+  --tw-prose-td-borders: var(--color-hairline);
+}
+.docs-prose a {
+  text-decoration: none;
+  font-weight: 500;
+}
+.docs-prose a:hover {
+  text-decoration: underline;
+}
+.docs-prose :not(pre) > code {
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid var(--color-hairline);
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+  font-weight: 400;
+  font-size: 0.85em;
+}
+.docs-prose :not(pre) > code::before,
+.docs-prose :not(pre) > code::after {
+  content: none;
+}
+.docs-prose pre {
+  border: 1px solid var(--color-hairline);
+  border-radius: 12px;
+  padding: 1rem 1.15rem !important;
+  overflow-x: auto;
+  font-size: 0.86rem;
+  line-height: 1.7;
+}
+.docs-prose pre.shiki {
+  background-color: #0f1715 !important;
+}
+.docs-prose pre code {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.docs-prose table {
+  display: block;
+  overflow-x: auto;
+  font-size: 0.9rem;
 }

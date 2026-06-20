@@ -1,0 +1,43 @@
+# Filters and fan-out
+
+One captured event resolves to every matching destination as an independent
+delivery track. A destination only receives an event that matches its
+`filter_spec`. All clauses must match (logical AND); an empty or absent spec
+matches everything.
+
+Body clauses address a JSON field by a dot-separated path, for example
+`data.object.status`. A non-JSON body fails any body clause.
+
+## Operators
+
+| Clause | Example | Matches when |
+| --- | --- | --- |
+| `body_equals` | `{"type": "payment.succeeded"}` | the field equals the value |
+| `header_equals` | `{"X-Github-Event": "push"}` | the header equals the value (case-insensitive name) |
+| `body_exists` | `["data.object.id"]` | the field is present |
+| `body_in` | `{"type": ["a", "b"]}` | the field value is one of the list |
+| `body_prefix` | `{"type": "payment."}` | the field value starts with the prefix |
+| `body_not` | `{"type": "payment.failed"}` | the field does not equal the value |
+
+## Example
+
+Route only live, succeeded Stripe payments to billing:
+
+```json
+{
+  "source": "stripe",
+  "url": "https://billing.internal/webhooks",
+  "filter_spec": {
+    "body_prefix": { "type": "payment." },
+    "body_equals": { "data.object.livemode": "true" },
+    "body_not":    { "type": "payment.failed" }
+  }
+}
+```
+
+## Fan-out
+
+Register several destinations for one source and each receives the event on its
+own track with its own filter, retry budget, and dead-letter state. A failing or
+dead-lettered destination never blocks the others, and the event's overall status
+in listings is derived from the per-destination states.

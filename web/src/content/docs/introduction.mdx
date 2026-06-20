@@ -1,0 +1,41 @@
+# Introduction
+
+**whook** is a self-hostable gateway that captures, retries, and replays inbound
+webhooks. It sits in front of your application: providers point at it instead of
+at you. It captures every inbound webhook the instant it arrives, returns a fast
+2xx so the provider is happy, then forwards the event to one or more destinations
+with automatic retries. Every request is stored durably, so you can list, inspect,
+and replay anything that came in.
+
+## Why a gateway
+
+Services like Stripe, GitHub, and Shopify notify you by sending an HTTP POST to a
+URL you give them. That POST arrives exactly once, at a moment you do not control.
+Point a provider straight at your application and it is fragile:
+
+- If your app is down or deploying when the webhook lands, the event is lost. Many
+  providers retry weakly or not at all.
+- When processing fails, the original request is already gone, so debugging is blind.
+- A provider usually allows one destination URL, but several internal services may
+  need the same event.
+- There is no simple way to replay a past webhook to reproduce a bug or recover.
+
+whook owns the inbound webhook end to end and fixes all four.
+
+## What you get
+
+- Durable capture before the provider is acknowledged, so no event is ever lost.
+- Exponential-backoff retries with a budget, then dead-letter for what never lands.
+- Fan-out to many destinations, each with its own filter, retries, and status.
+- A durable record of every request, queryable and replayable from an API or UI.
+- Pluggable signature verification (Stripe, GitHub), idempotent capture, metrics.
+- One static Go binary. SQLite built in, Postgres when you outgrow it.
+
+## How it works
+
+Capture is decoupled from delivery. An inbound request is saved durably **before**
+it is acknowledged. Delivery happens afterward, on whook's own schedule, so a
+destination being down never costs you an event. Failed deliveries are retried on
+a deterministic exponential schedule and dead-lettered once the budget is spent.
+
+Ready to try it? Head to the [Quickstart](/docs/quickstart).

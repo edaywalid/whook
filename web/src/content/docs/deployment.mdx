@@ -1,0 +1,41 @@
+# Deployment
+
+whook is a single static Go binary with SQLite built in, so most deploys are a
+matter of running one container or one binary.
+
+## Docker image
+
+Prebuilt multi-arch images (`linux/amd64`, `linux/arm64`) are published to GitHub
+Container Registry on every push to `main` and every `v*` tag. Tags: `latest`,
+`main`, `sha-<short>`, and on releases the semver tags (`1.2.3`, `1.2`).
+
+```sh
+docker run -p 8080:8080 -v whook-data:/data ghcr.io/edaywalid/whook:latest
+```
+
+## Docker Compose
+
+```sh
+cp .env.example .env   # set WHOOK_ADMIN_TOKEN and WHOOK_SECRET_KEY
+docker compose up --build -d
+```
+
+## Observability
+
+`GET /metrics` exposes Prometheus metrics: ingest rate, ingest write latency,
+delivery outcomes, and dead-letter volume. It sits behind the admin token, so point
+your scraper at it with the `Authorization: Bearer <token>` header.
+
+`GET /healthz` is an unauthenticated liveness check suitable for load balancers and
+orchestrators.
+
+## Graceful shutdown
+
+On `SIGINT` or `SIGTERM` the gateway stops accepting new work, lets in-flight
+deliveries finish (up to a drain timeout), and then exits, so a deploy or restart
+does not cut a delivery off mid-flight.
+
+## Scaling
+
+For larger or multi-instance deploys, move from SQLite to Postgres. See
+[Postgres](/docs/postgres).

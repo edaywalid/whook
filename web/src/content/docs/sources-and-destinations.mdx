@@ -1,0 +1,50 @@
+# Sources and destinations
+
+A **source** is a provider integration that webhooks POST to. A **destination** is
+where matching events are forwarded. One source fans out to many destinations,
+each tracked independently.
+
+## Sources
+
+Register a source before sending. Per-source config lives on the source: which
+verifier to run, the signing secret, and which header carries a dedup key.
+
+```sh
+curl -X POST localhost:8080/sources -d '{
+  "name": "stripe",
+  "verifier": "stripe",
+  "secret": "whsec_...",
+  "dedup_header": "Stripe-Id"
+}'
+```
+
+- `verifier` (optional): `stripe` or `github`. Requests that fail verification are
+  captured with status `rejected` but never delivered, so forgeries remain
+  inspectable.
+- `secret` (optional, write-only): the provider signing secret, stored encrypted.
+  Responses only report whether a secret is set.
+- `dedup_header` (optional): a header carrying the provider's event id. Re-sent
+  events with the same key collapse into one, even under a concurrent race.
+
+Update a source with `PATCH /sources/{name}` and list them with `GET /sources`.
+
+## Destinations
+
+A destination forwards matching events to a URL.
+
+```sh
+curl -X POST localhost:8080/destinations -d '{
+  "source": "stripe",
+  "url": "https://billing.internal/webhooks",
+  "filter_spec": { "body_equals": { "type": "payment.succeeded" } }
+}'
+```
+
+- `filter_spec` (optional): only events that match are delivered. See
+  [Filters and fan-out](/docs/filters).
+- `enabled` (optional, default true): disable a destination to pause delivery
+  without losing events, then re-enable it later.
+- `backoff` (optional): override the default retry schedule for this destination.
+
+Each destination gets its own attempt history and dead-letter state, so one
+failing consumer never blocks the others.

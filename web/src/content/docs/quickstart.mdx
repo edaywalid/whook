@@ -1,0 +1,48 @@
+# Quickstart
+
+Get whook running and send your first webhook in a couple of minutes. This assumes
+whook is listening on `http://localhost:8080` (see [Installation](/docs/installation)).
+
+## 1. Register a source
+
+A source is the provider integration that webhooks POST to. Register it before
+sending anything.
+
+```sh
+curl -X POST localhost:8080/sources -d '{"name":"stripe"}'
+```
+
+## 2. Add a destination
+
+A destination is where matching events are forwarded. One source can fan out to
+many destinations.
+
+```sh
+curl -X POST localhost:8080/destinations \
+  -d '{"source":"stripe","url":"https://your-app.example.com/webhooks"}'
+```
+
+## 3. Send a webhook
+
+Point the provider (or curl) at `/ingest/{source}`. whook stores the request and
+returns a fast `200` with the event id.
+
+```sh
+curl -X POST localhost:8080/ingest/stripe \
+  -H 'Content-Type: application/json' \
+  -d '{"type":"payment.succeeded","amount":4900}'
+# -> {"event_id":"evt_9f3a21c8b4e07d56"}
+```
+
+## 4. Inspect and replay
+
+```sh
+curl localhost:8080/events
+```
+
+Open `http://localhost:8080/ui` for the dashboard: it lists events, links to a
+per-event detail page with the payload, per-destination delivery state, and full
+attempt history, and gives you a replay button and a dead-letter view.
+
+Next, see [Sources and destinations](/docs/sources-and-destinations) to add
+signature verification and routing filters.

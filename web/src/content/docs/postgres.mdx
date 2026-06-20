@@ -1,0 +1,37 @@
+# Postgres
+
+SQLite is the default and is single-writer, which is fine for one instance. To
+scale out to many workers or instances, point `WHOOK_DATABASE_URL` at Postgres.
+
+```sh
+WHOOK_DATABASE_URL=postgres://whook:whook@localhost:5432/whook?sslmode=disable
+```
+
+A DSN starting with `postgres://` or `postgresql://` selects the Postgres backend
+automatically; anything else is SQLite.
+
+## How it works
+
+The gateway applies its Postgres migrations on startup, the same way it does for
+SQLite, so there is no separate migrate step. The delivery queue is claimed with:
+
+```sql
+SELECT ... FOR UPDATE SKIP LOCKED
+```
+
+so many workers and many instances can share one queue without ever delivering the
+same event twice. SQLite achieves the same guarantee with a single-writer lease;
+Postgres uses row-level locking, which scales horizontally.
+
+## With Docker Compose
+
+The bundled compose file ships an optional Postgres service under a profile. Start
+it and set the DSN with host `postgres`:
+
+```sh
+docker compose --profile postgres up
+```
+
+```sh
+WHOOK_DATABASE_URL=postgres://whook:whook@postgres:5432/whook?sslmode=disable
+```

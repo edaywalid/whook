@@ -15,12 +15,17 @@
   "dependencies": {
     "@fontsource-variable/geist": "^5.2.9",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
+    "@mdx-js/rollup": "^3.1.1",
+    "@shikijs/rehype": "^4.2.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-router": "latest",
     "@tanstack/react-start": "^1.168.26",
     "lucide-react": "^0.545.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "rehype-slug": "^6.0.0",
+    "remark-gfm": "^4.0.1",
+    "shiki": "^4.2.0",
     "simple-icons": "^16.23.0",
     "tailwindcss": "^4.1.18"
   },
