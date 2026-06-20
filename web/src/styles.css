@@ -1,34 +1,45 @@
 @import "tailwindcss";
 
-/* whook brand system: teal accent carried from the project diagrams, warm
-   paper ground, deep slate ink. Light theme, locked. */
+/* whook brand system, dark. Near-black teal-charcoal ground, bright teal accent,
+   and a set of light "card" tokens so the coded diagrams stay bright and float
+   on the dark page. Dark theme, locked. */
 @theme {
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, monospace;
 
-  --color-paper: #f4f3ef;
-  --color-surface: #ffffff;
-  --color-surface-2: #faf9f5;
-  --color-ink: #17211f;
-  --color-body: #3b4845;
-  --color-muted: #6c7a76;
-  --color-hairline: #e4e1d9;
+  /* page chrome */
+  --color-paper: #0a0f0e;
+  --color-surface: #111a18;
+  --color-surface-2: #0d1413;
+  --color-ink: #eef3f1;
+  --color-body: #9fabA7;
+  --color-muted: #6b7774;
+  --color-hairline: #223230;
 
+  /* brand teal */
   --color-teal: #0f766e;
+  --color-teal-bright: #2dd4bf;
   --color-teal-strong: #0b5d56;
-  --color-teal-soft: #d6ece8;
-  --color-teal-tint: #eef9f6;
+  --color-teal-soft: #cdeae5;
+  --color-teal-tint: #eaf8f4;
 
+  /* status (read well on the light diagram cards) */
   --color-http: #3a6ea5;
   --color-warn: #a8620c;
-  --color-dead: #ad3f4a;
+  --color-dead: #c2515c;
+
+  /* light card palette for the diagram visuals */
+  --color-card: #ffffff;
+  --color-card-2: #f6f5f1;
+  --color-cink: #17211f;
+  --color-cbody: #3b4845;
+  --color-cmuted: #6c7a76;
+  --color-cline: #e4e1d9;
 
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Base element styles live in @layer base so Tailwind color utilities (e.g.
-   text-paper on a dark section) still win over these defaults. */
 @layer base {
   * {
     box-sizing: border-box;
@@ -37,6 +48,7 @@
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    background-color: var(--color-paper);
   }
 
   body {
@@ -59,8 +71,8 @@
   }
 
   ::selection {
-    background: var(--color-teal-soft);
-    color: var(--color-teal-strong);
+    background: var(--color-teal-bright);
+    color: #06201d;
   }
 }
 
@@ -70,20 +82,63 @@
   }
 }
 
-/* Tabular figures for technical numbers (event ids, durations). */
 .tnum {
   font-variant-numeric: tabular-nums;
 }
 
-/* Faint engineering grid for atmospheric sections. */
+/* Faint engineering grid for atmospheric sections (light lines on dark). */
 .bg-grid {
   background-image:
-    linear-gradient(to right, color-mix(in srgb, var(--color-ink) 5%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in srgb, var(--color-ink) 5%, transparent) 1px, transparent 1px);
+    linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
   background-size: 56px 56px;
 }
 
-/* Pressable feedback for every interactive control. */
+/* Soft teal radial glow, placed behind hero and key moments. */
+.glow-teal {
+  background: radial-gradient(
+    closest-side,
+    rgb(45 212 191 / 0.22),
+    transparent 78%
+  );
+}
+
+/* Fine grain over the whole page so the dark never reads as flat. */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Scroll reveal that enhances an already-visible default. Content is opacity 1
+   unless the browser supports scroll-driven animations and motion is allowed,
+   so it never ships blank in a headless render, a prerender, or with slow JS. */
+.reveal {
+  opacity: 1;
+}
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal-in both linear;
+      animation-timeline: view();
+      animation-range: entry 0% entry 34%;
+    }
+  }
+}
+
 .pressable {
   transition: transform 160ms var(--ease-out-quint);
 }
@@ -93,6 +148,9 @@
 @media (prefers-reduced-motion: reduce) {
   .pressable:active {
     transform: none;
+  }
+  .grain {
+    display: none;
   }
 }
 

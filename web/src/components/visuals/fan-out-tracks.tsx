@@ -26,9 +26,9 @@ export function FanOutTracks() {
       <path d="M168 182 C 250 182, 250 294 332 294" fill="none" className="stroke-dead flow-slow" strokeWidth="1.5" strokeDasharray="2 5" markerEnd="url(#fo-dead)" />
 
       {/* event node */}
-      <rect x="34" y="150" width="134" height="64" rx="14" className="fill-surface stroke-hairline" strokeWidth="1.5" />
-      <text x="101" y="182" textAnchor="middle" className="fill-ink text-[15px] font-semibold">1 event</text>
-      <text x="101" y="200" textAnchor="middle" className="fill-muted font-mono text-[11px]">order.created</text>
+      <rect x="34" y="150" width="134" height="64" rx="14" className="fill-card stroke-cline" strokeWidth="1.5" />
+      <text x="101" y="182" textAnchor="middle" className="fill-cink text-[15px] font-semibold">1 event</text>
+      <text x="101" y="200" textAnchor="middle" className="fill-cmuted font-mono text-[11px]">order.created</text>
 
       <Track y={38} name="Billing" filter="amount > 0" status="delivered" tone="teal" />
       <Track y={150} name="Email" filter="type = receipt" status="retrying" tone="warn" />
@@ -59,11 +59,11 @@ function Track({
   const t = TONES[tone]
   return (
     <g>
-      <rect x="332" y={y} width="234" height="64" rx="14" className="fill-surface stroke-hairline" strokeWidth="1.5" />
-      <text x="352" y={y + 28} className="fill-ink text-[14px] font-semibold">
+      <rect x="332" y={y} width="234" height="64" rx="14" className="fill-card stroke-cline" strokeWidth="1.5" />
+      <text x="352" y={y + 28} className="fill-cink text-[14px] font-semibold">
         {name}
       </text>
-      <text x="352" y={y + 47} className="fill-muted font-mono text-[11px]">
+      <text x="352" y={y + 47} className="fill-cmuted font-mono text-[11px]">
         filter: {filter}
       </text>
       <g>

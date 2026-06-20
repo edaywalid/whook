@@ -82,8 +82,8 @@ export function Features() {
 
         {FEATURES.map((feature, i) => (
           <Reveal key={feature.title} delay={i * 0.05}>
-            <article className="flex h-full flex-col gap-4 rounded-2xl border border-hairline bg-surface p-7 transition-colors hover:border-teal/40">
-              <span className="grid size-10 place-items-center rounded-xl bg-teal-tint text-teal">
+            <article className="flex h-full flex-col gap-4 rounded-2xl border border-hairline bg-surface p-7 transition-colors hover:border-teal-bright/40 hover:bg-white/[0.02]">
+              <span className="grid size-10 place-items-center rounded-xl bg-teal-bright/12 text-teal-bright">
                 <feature.icon className="size-5" strokeWidth={1.75} />
               </span>
               <div>

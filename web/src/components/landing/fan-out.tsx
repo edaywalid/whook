@@ -27,7 +27,7 @@ export function FanOut() {
             </ul>
           </Reveal>
           <Reveal y={28}>
-            <figure className="rounded-2xl border border-hairline bg-surface px-4 py-8 shadow-[0_24px_70px_-40px_rgba(23,33,31,0.3)] sm:px-7">
+            <figure className="rounded-2xl bg-card px-4 py-8 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.7),0_0_90px_-25px_rgba(45,212,191,0.3)] sm:px-7">
               <FanOutTracks />
             </figure>
           </Reveal>

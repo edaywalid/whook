@@ -42,7 +42,7 @@ export function ProblemSection() {
       </Reveal>
 
       <Reveal delay={0.1} y={28}>
-        <figure className="mt-12 rounded-2xl border border-hairline bg-surface px-4 py-8 shadow-[0_24px_70px_-40px_rgba(23,33,31,0.3)] sm:px-10">
+        <figure className="mt-12 rounded-2xl bg-card px-4 py-8 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.7),0_0_80px_-30px_rgba(194,81,92,0.3)] sm:px-10">
           <figcaption className="mb-4 font-mono text-[11px] uppercase tracking-[0.16em] text-dead">
             Without a gateway
           </figcaption>

@@ -52,17 +52,17 @@ export function CaptureFlow() {
       <path d="M164 180 H231" fill="none" className="stroke-http flow" strokeWidth="1.75" markerEnd="url(#cf-arrow-slate)" />
       <path d="M369 180 H435" fill="none" className="stroke-http flow" strokeWidth="1.75" markerEnd="url(#cf-arrow-slate)" />
       <path d="M300 240 V258" fill="none" className="stroke-teal flow-slow" strokeWidth="1.75" markerEnd="url(#cf-arrow-teal)" />
-      <text x="402" y="170" textAnchor="middle" className="fill-muted font-mono text-[11px]">
+      <text x="402" y="170" textAnchor="middle" className="fill-cmuted font-mono text-[11px]">
         deliver
       </text>
 
       {/* provider */}
       <g>
-        <rect x="32" y="146" width="132" height="68" rx="14" className="fill-surface stroke-hairline" strokeWidth="1.5" />
-        <text x="98" y="178" textAnchor="middle" className="fill-ink text-[15px] font-semibold">
+        <rect x="32" y="146" width="132" height="68" rx="14" className="fill-card stroke-cline" strokeWidth="1.5" />
+        <text x="98" y="178" textAnchor="middle" className="fill-cink text-[15px] font-semibold">
           Stripe
         </text>
-        <text x="98" y="197" textAnchor="middle" className="fill-muted font-mono text-[11px]">
+        <text x="98" y="197" textAnchor="middle" className="fill-cmuted font-mono text-[11px]">
           POST /webhook
         </text>
       </g>
@@ -84,8 +84,8 @@ export function CaptureFlow() {
 
       {/* durable store */}
       <g>
-        <rect x="244" y="258" width="112" height="48" rx="12" className="fill-surface-2 stroke-hairline" strokeWidth="1.5" />
-        <text x="300" y="280" textAnchor="middle" className="fill-ink text-[12px] font-medium">
+        <rect x="244" y="258" width="112" height="48" rx="12" className="fill-card-2 stroke-cline" strokeWidth="1.5" />
+        <text x="300" y="280" textAnchor="middle" className="fill-cink text-[12px] font-medium">
           durable store
         </text>
         <g className="fill-teal">
@@ -97,11 +97,11 @@ export function CaptureFlow() {
 
       {/* your app */}
       <g>
-        <rect x="436" y="146" width="132" height="68" rx="14" className="fill-surface stroke-hairline" strokeWidth="1.5" />
-        <text x="502" y="178" textAnchor="middle" className="fill-ink text-[15px] font-semibold">
+        <rect x="436" y="146" width="132" height="68" rx="14" className="fill-card stroke-cline" strokeWidth="1.5" />
+        <text x="502" y="178" textAnchor="middle" className="fill-cink text-[15px] font-semibold">
           Your app
         </text>
-        <text x="502" y="197" textAnchor="middle" className="fill-muted font-mono text-[11px]">
+        <text x="502" y="197" textAnchor="middle" className="fill-cmuted font-mono text-[11px]">
           delivered
         </text>
       </g>

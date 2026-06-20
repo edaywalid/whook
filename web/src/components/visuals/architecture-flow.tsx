@@ -46,8 +46,8 @@ export function ArchitectureFlow() {
       <ArchNode x={24} label="Provider" sub="Stripe, GitHub…" />
       <g>
         <ArchNode x={180} label="Ingest" sub="capture + 2xx" />
-        <rect x="186" y="116" width="108" height="20" rx="10" className="fill-surface stroke-hairline" strokeWidth="1" />
-        <text x="240" y="130" textAnchor="middle" className="fill-muted font-mono text-[10px] uppercase tracking-wider">signature gate</text>
+        <rect x="186" y="116" width="108" height="20" rx="10" className="fill-card stroke-cline" strokeWidth="1" />
+        <text x="240" y="130" textAnchor="middle" className="fill-cmuted font-mono text-[10px] uppercase tracking-wider">signature gate</text>
       </g>
 
       {/* durable store (focal) */}
@@ -61,15 +61,15 @@ export function ArchitectureFlow() {
 
       {/* workers (taller) */}
       <g>
-        <rect x="676" y="130" width="140" height="92" rx="16" className="fill-surface stroke-hairline" strokeWidth="1.5" />
-        <text x="746" y="172" textAnchor="middle" className="fill-ink text-[15px] font-semibold">Delivery workers</text>
-        <text x="746" y="191" textAnchor="middle" className="fill-muted font-mono text-[11px]">retry · backoff</text>
+        <rect x="676" y="130" width="140" height="92" rx="16" className="fill-card stroke-cline" strokeWidth="1.5" />
+        <text x="746" y="172" textAnchor="middle" className="fill-cink text-[15px] font-semibold">Delivery workers</text>
+        <text x="746" y="191" textAnchor="middle" className="fill-cmuted font-mono text-[11px]">retry · backoff</text>
       </g>
 
       <ArchNode x={852} label="Your services" sub="billing, email…" w={124} />
 
       {/* dead-letter node */}
-      <rect x="686" y="286" width="120" height="46" rx="12" className="fill-surface-2 stroke-dead/30" strokeWidth="1.5" />
+      <rect x="686" y="286" width="120" height="46" rx="12" className="fill-card-2 stroke-dead/30" strokeWidth="1.5" />
       <text x="746" y="314" textAnchor="middle" className="fill-dead text-[12px] font-medium">dead-letter</text>
     </svg>
   )
@@ -89,11 +89,11 @@ function ArchNode({
   const cx = x + w / 2
   return (
     <g>
-      <rect x={x} y={140} width={w} height={72} rx={14} className="fill-surface stroke-hairline" strokeWidth="1.5" />
-      <text x={cx} y={172} textAnchor="middle" className="fill-ink text-[14px] font-semibold">
+      <rect x={x} y={140} width={w} height={72} rx={14} className="fill-card stroke-cline" strokeWidth="1.5" />
+      <text x={cx} y={172} textAnchor="middle" className="fill-cink text-[14px] font-semibold">
         {label}
       </text>
-      <text x={cx} y={191} textAnchor="middle" className="fill-muted font-mono text-[10.5px]">
+      <text x={cx} y={191} textAnchor="middle" className="fill-cmuted font-mono text-[10.5px]">
         {sub}
       </text>
     </g>

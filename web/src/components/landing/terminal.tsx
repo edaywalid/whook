@@ -37,7 +37,7 @@ export function Terminal() {
                 <span className="tnum text-[#5fb8a8]">{line.text}</span>
               ) : (
                 <span className="text-[#d7e2de]">
-                  <span className="text-teal">$ </span>
+                  <span className="text-teal-bright">$ </span>
                   {line.text}
                 </span>
               )}

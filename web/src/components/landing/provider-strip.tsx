@@ -32,7 +32,7 @@ export function ProviderStrip() {
               role="img"
               aria-label={icon.title}
               viewBox="0 0 24 24"
-              className="h-[26px] w-auto fill-muted opacity-70 transition-opacity duration-200 hover:opacity-100"
+              className="h-[26px] w-auto fill-body opacity-50 transition-opacity duration-200 hover:opacity-90"
             >
               <path d={icon.path} />
             </svg>

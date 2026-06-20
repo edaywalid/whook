@@ -26,7 +26,7 @@ export function HowItWorks() {
     <section id="how" className="border-y border-hairline bg-surface-2">
       <div className="mx-auto max-w-[1200px] px-6 py-24 lg:py-28">
         <Reveal>
-          <p className="font-mono text-xs uppercase tracking-[0.16em] text-teal-strong">
+          <p className="font-mono text-xs uppercase tracking-[0.16em] text-teal-bright">
             How it works
           </p>
           <h2 className="mt-4 max-w-[24ch] text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
@@ -40,7 +40,7 @@ export function HowItWorks() {
         </Reveal>
 
         <Reveal delay={0.1} y={28}>
-          <figure className="mt-12 rounded-2xl border border-hairline bg-surface px-4 py-8 shadow-[0_24px_70px_-36px_rgba(23,33,31,0.35)] sm:px-10">
+          <figure className="mt-12 rounded-2xl bg-card px-4 py-8 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.7),0_0_90px_-25px_rgba(45,212,191,0.32)] sm:px-10">
             <ArchitectureFlow />
           </figure>
         </Reveal>

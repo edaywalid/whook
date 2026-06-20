@@ -4,7 +4,6 @@ import {
   Scripts,
   createRootRoute,
 } from '@tanstack/react-router'
-import { LazyMotion, domAnimation } from 'motion/react'
 import type { ReactNode } from 'react'
 
 import '@fontsource-variable/geist'
@@ -41,9 +40,7 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <RootDocument>
-      <LazyMotion features={domAnimation} strict>
-        <Outlet />
-      </LazyMotion>
+      <Outlet />
     </RootDocument>
   )
 }
@@ -56,6 +53,7 @@ function RootDocument({ children }: { children: ReactNode }) {
       </head>
       <body>
         {children}
+        <div className="grain" aria-hidden="true" />
         <Scripts />
       </body>
     </html>
