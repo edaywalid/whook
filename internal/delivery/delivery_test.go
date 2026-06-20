@@ -95,6 +95,24 @@ func TestDeliver(t *testing.T) {
 		}
 	})
 
+	t.Run("429 with http-date retry-after is honored", func(t *testing.T) {
+		when := time.Now().Add(45 * time.Second).UTC().Format(http.TimeFormat)
+		eng := delivery.New(fakeDoer{resp: response(429, map[string]string{"Retry-After": when})})
+		res := eng.Deliver(context.Background(), event, dest)
+		if res.RetryAfter < 30*time.Second || res.RetryAfter > 46*time.Second {
+			t.Fatalf("expected RetryAfter near 45s, got %v", res.RetryAfter)
+		}
+	})
+
+	t.Run("429 with past http-date has no override", func(t *testing.T) {
+		when := time.Now().Add(-time.Minute).UTC().Format(http.TimeFormat)
+		eng := delivery.New(fakeDoer{resp: response(429, map[string]string{"Retry-After": when})})
+		res := eng.Deliver(context.Background(), event, dest)
+		if res.RetryAfter != 0 {
+			t.Fatalf("expected no RetryAfter for a past date, got %v", res.RetryAfter)
+		}
+	})
+
 	t.Run("429 without retry-after has no override", func(t *testing.T) {
 		eng := delivery.New(fakeDoer{resp: response(429, nil)})
 		res := eng.Deliver(context.Background(), event, dest)

@@ -66,7 +66,7 @@ func (e *Engine) Deliver(ctx context.Context, event core.Event, dest core.Destin
 		StatusCode: resp.StatusCode,
 		Snippet:    string(snippet),
 		Duration:   e.now().Sub(start),
-		RetryAfter: retryAfter(resp),
+		RetryAfter: retryAfter(resp, e.now()),
 	}
 }
 
@@ -97,9 +97,11 @@ func forwardHeaders(req *http.Request, event core.Event) {
 	req.Header.Set("X-Whook-Source", event.Source)
 }
 
-// retryAfter reads a Retry-After header expressed in seconds. Header-date form
-// is ignored for the MVP; the scheduler falls back to its computed backoff.
-func retryAfter(resp *http.Response) time.Duration {
+// retryAfter reads a 429 Retry-After header. It accepts both the delta-seconds
+// form ("120") and the HTTP-date form ("Wed, 21 Oct 2026 07:28:00 GMT"),
+// returning how long to wait from now. An absent, malformed, or past value
+// returns 0 so the scheduler falls back to its computed backoff.
+func retryAfter(resp *http.Response, now time.Time) time.Duration {
 	if resp.StatusCode != http.StatusTooManyRequests {
 		return 0
 	}
@@ -107,9 +109,16 @@ func retryAfter(resp *http.Response) time.Duration {
 	if v == "" {
 		return 0
 	}
-	secs, err := strconv.Atoi(v)
-	if err != nil || secs < 0 {
-		return 0
+	if secs, err := strconv.Atoi(v); err == nil {
+		if secs < 0 {
+			return 0
+		}
+		return time.Duration(secs) * time.Second
 	}
-	return time.Duration(secs) * time.Second
+	if when, err := http.ParseTime(v); err == nil {
+		if d := when.Sub(now); d > 0 {
+			return d
+		}
+	}
+	return 0
 }
