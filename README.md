@@ -5,6 +5,8 @@ every inbound webhook the moment it arrives, returns a fast 2xx so the provider
 is happy, and then forwards the event to one or more destinations with automatic
 retries. You can list, inspect, and replay any captured event.
 
+Landing page: https://whook-gateway.netlify.app
+
 ![Without whook the event is lost when your app is down; with whook it is captured to disk and delivered later](docs/diagrams/assets/without-vs-with-whook.png)
 
 ## The problem
