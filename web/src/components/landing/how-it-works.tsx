@@ -1,4 +1,5 @@
 import { Reveal } from '../reveal'
+import { ArchitectureFlow } from '../visuals/architecture-flow'
 
 type Step = { n: string; title: string; body: string }
 
@@ -39,15 +40,8 @@ export function HowItWorks() {
         </Reveal>
 
         <Reveal delay={0.1} y={28}>
-          <figure className="mt-12 overflow-hidden rounded-2xl border border-hairline bg-surface p-4 shadow-[0_24px_70px_-36px_rgba(23,33,31,0.35)] sm:p-8">
-            <img
-              src="/diagrams/architecture.png"
-              alt="Provider sends to whook ingest, which verifies the signature and writes the event to a durable SQLite store before acknowledging. A router fans the event out to delivery workers, which retry on backoff, with dead-letter and replay branches."
-              width={1600}
-              height={900}
-              className="w-full"
-              loading="lazy"
-            />
+          <figure className="mt-12 rounded-2xl border border-hairline bg-surface px-4 py-8 shadow-[0_24px_70px_-36px_rgba(23,33,31,0.35)] sm:px-10">
+            <ArchitectureFlow />
           </figure>
         </Reveal>
 

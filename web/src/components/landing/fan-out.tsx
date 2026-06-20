@@ -1,6 +1,7 @@
 import { Layers, Split } from 'lucide-react'
 import { FeatureLine } from '../feature-line'
 import { Reveal } from '../reveal'
+import { FanOutTracks } from '../visuals/fan-out-tracks'
 
 export function FanOut() {
   return (
@@ -26,15 +27,8 @@ export function FanOut() {
             </ul>
           </Reveal>
           <Reveal y={28}>
-            <figure className="overflow-hidden rounded-2xl border border-hairline bg-surface p-4 shadow-[0_24px_70px_-40px_rgba(23,33,31,0.3)] sm:p-6">
-              <img
-                src="/diagrams/fan-out.png"
-                alt="One captured event is delivered to three independent tracks: billing is delivered, email is retrying, and analytics is dead-lettered, each with its own filter tag and status."
-                width={1600}
-                height={900}
-                className="w-full"
-                loading="lazy"
-              />
+            <figure className="rounded-2xl border border-hairline bg-surface px-4 py-8 shadow-[0_24px_70px_-40px_rgba(23,33,31,0.3)] sm:px-7">
+              <FanOutTracks />
             </figure>
           </Reveal>
         </div>

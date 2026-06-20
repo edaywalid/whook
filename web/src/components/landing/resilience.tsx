@@ -1,21 +1,15 @@
 import { Database, RotateCcw, Zap } from 'lucide-react'
 import { FeatureLine } from '../feature-line'
 import { Reveal } from '../reveal'
+import { RetryTimeline } from '../visuals/retry-timeline'
 
 export function Resilience() {
   return (
     <section className="mx-auto max-w-[1200px] px-6 py-24 lg:py-28">
       <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
         <Reveal y={28} className="order-2 lg:order-1">
-          <figure className="overflow-hidden rounded-2xl border border-hairline bg-surface p-4 shadow-[0_24px_70px_-40px_rgba(23,33,31,0.3)] sm:p-6">
-            <img
-              src="/diagrams/retry-timeline.png"
-              alt="A failed delivery is retried with growing backoff gaps of one, two, four, and eight seconds, until an attempt returns 200 OK or the retry budget is exhausted and the event is dead-lettered."
-              width={1600}
-              height={900}
-              className="w-full"
-              loading="lazy"
-            />
+          <figure className="rounded-2xl border border-hairline bg-surface px-4 py-8 shadow-[0_24px_70px_-40px_rgba(23,33,31,0.3)] sm:px-7">
+            <RetryTimeline />
           </figure>
         </Reveal>
         <Reveal className="order-1 lg:order-2">

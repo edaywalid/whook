@@ -1,6 +1,7 @@
 import { ArrowRight, Github } from 'lucide-react'
 import { REPO_URL } from '../../lib/constants'
 import { Reveal } from '../reveal'
+import { CaptureFlow } from '../visuals/capture-flow'
 
 export function Hero() {
   return (
@@ -45,15 +46,12 @@ export function Hero() {
 
         <div className="lg:col-span-7">
           <Reveal delay={0.2} y={28}>
-            <figure className="overflow-hidden rounded-2xl border border-hairline bg-surface shadow-[0_24px_70px_-30px_rgba(23,33,31,0.4)]">
-              <img
-                src="/diagrams/without-vs-with-whook.png"
-                alt="Without whook, a webhook sent while your app is deploying is lost. With whook, the request is captured to disk, acknowledged with a fast 2xx, and delivered to your app on schedule."
-                width={1600}
-                height={900}
-                className="w-full"
-                loading="eager"
-              />
+            <figure className="rounded-2xl border border-hairline bg-surface p-5 shadow-[0_24px_70px_-30px_rgba(23,33,31,0.4)] sm:p-7">
+              <figcaption className="mb-4 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+                <span>capture &rarr; deliver</span>
+                <span className="text-teal-strong">live</span>
+              </figcaption>
+              <CaptureFlow />
             </figure>
           </Reveal>
         </div>

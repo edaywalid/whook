@@ -1,6 +1,7 @@
 import { FileWarning, RotateCcw, ServerCrash, Split } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Reveal } from '../reveal'
+import { WithoutWhook } from '../visuals/without-whook'
 
 type Problem = { icon: LucideIcon; title: string; body: string }
 
@@ -34,8 +35,22 @@ export function ProblemSection() {
         <h2 className="max-w-[18ch] text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
           Pointing a provider straight at your app is fragile.
         </h2>
+        <p className="mt-4 max-w-[54ch] text-lg leading-relaxed text-body">
+          The provider sends once, at a moment you do not control. Miss it and the
+          event is gone for good.
+        </p>
       </Reveal>
-      <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-2">
+
+      <Reveal delay={0.1} y={28}>
+        <figure className="mt-12 rounded-2xl border border-hairline bg-surface px-4 py-8 shadow-[0_24px_70px_-40px_rgba(23,33,31,0.3)] sm:px-10">
+          <figcaption className="mb-4 font-mono text-[11px] uppercase tracking-[0.16em] text-dead">
+            Without a gateway
+          </figcaption>
+          <WithoutWhook />
+        </figure>
+      </Reveal>
+
+      <div className="mt-8 grid gap-px overflow-hidden rounded-2xl border border-hairline bg-hairline sm:grid-cols-2">
         {PROBLEMS.map((problem, i) => (
           <Reveal key={problem.title} delay={i * 0.05}>
             <article className="flex h-full flex-col gap-4 bg-surface p-7">
