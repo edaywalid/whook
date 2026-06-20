@@ -5,6 +5,7 @@
 **A self-hostable gateway that captures, retries, and replays inbound webhooks.**
 
 [![CI](https://github.com/edaywalid/whook/actions/workflows/ci.yml/badge.svg)](https://github.com/edaywalid/whook/actions/workflows/ci.yml)
+&nbsp;[![Docker](https://github.com/edaywalid/whook/actions/workflows/docker.yml/badge.svg)](https://github.com/edaywalid/whook/actions/workflows/docker.yml)
 &nbsp;![License: MIT](https://img.shields.io/badge/license-MIT-0f766e)
 &nbsp;![Go 1.25](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go&logoColor=white)
 &nbsp;[![Live demo](https://img.shields.io/badge/demo-whook--gateway.netlify.app-0f766e)](https://whook-gateway.netlify.app)
@@ -114,6 +115,15 @@ and has a dead-letter view. With an admin token set, pass it as
 `Authorization: Bearer <token>` (or `?token=` for the dashboard).
 
 ## Run with Docker
+
+Prebuilt multi-arch images (linux/amd64, linux/arm64) are published to GitHub
+Container Registry on every push to `main` and every `v*` tag:
+
+```sh
+docker run -p 8080:8080 -v whook-data:/data ghcr.io/edaywalid/whook:latest
+```
+
+Or build and run the full stack from source with compose:
 
 ```sh
 cp .env.example .env   # set WHOOK_ADMIN_TOKEN and WHOOK_SECRET_KEY

@@ -1,5 +1,6 @@
 .git
 .gitignore
+.github
 *.db
 *.db-shm
 *.db-wal
@@ -8,3 +9,10 @@
 /whook
 PRD.md
 README.md
+# Not needed to build the Go binary.
+web
+docs
+docker-compose.yml
+Makefile
+.env
+.env.example

@@ -1,12 +1,17 @@
-# Build a static, cgo-free binary (the SQLite driver is pure Go).
-FROM golang:1.25-alpine AS build
+# Build a static, cgo-free binary (the SQLite driver is pure Go). Building on
+# BUILDPLATFORM and cross-compiling to TARGET* keeps multi-arch builds fast
+# (no QEMU for the compile step).
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS build
+ARG TARGETOS
+ARG TARGETARCH
 WORKDIR /src
 
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /out/whook ./cmd/whook
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
+    go build -ldflags="-s -w" -o /out/whook ./cmd/whook
 
 FROM alpine:3.20
 RUN apk add --no-cache wget \
