@@ -31,6 +31,9 @@ export const Route = createRootRoute({
       },
       { property: 'og:type', content: 'website' },
     ],
+    links: [
+      { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+    ],
   }),
   component: RootComponent,
 })
