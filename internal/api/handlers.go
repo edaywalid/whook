@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -279,6 +280,10 @@ func (s *Server) handleCreateDestination(w http.ResponseWriter, r *http.Request)
 		writeError(w, http.StatusBadRequest, "source and url are required")
 		return
 	}
+	if err := validateURL(in.URL); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
 	dest := core.Destination{
 		ID:         id.New("dst"),
@@ -314,6 +319,10 @@ func (s *Server) handleUpdateDestination(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	if in.URL != "" {
+		if err := validateURL(in.URL); err != nil {
+			writeError(w, http.StatusBadRequest, err.Error())
+			return
+		}
 		dest.URL = in.URL
 	}
 	if in.Enabled != nil {
@@ -359,4 +368,18 @@ func atoiDefault(s string, def int) int {
 		return def
 	}
 	return n
+}
+
+// validateURL rejects destination URLs that are not absolute http or https URLs.
+// A non-absolute or non-HTTP URL will always fail at delivery time, so we reject
+// it early at the API boundary to give the caller a clear error.
+func validateURL(rawURL string) error {
+	u, err := url.Parse(rawURL)
+	if err != nil || u.Host == "" {
+		return errors.New("destination url must be an absolute http or https url")
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return errors.New("destination url scheme must be http or https")
+	}
+	return nil
 }
