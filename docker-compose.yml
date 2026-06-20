@@ -6,7 +6,10 @@ services:
       - "8080:8080"
     environment:
       WHOOK_ADDR: ":8080"
-      WHOOK_DATABASE_URL: "file:/data/whook.db?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)"
+      # Defaults to the bundled SQLite. To use Postgres, start the optional
+      # service below and set WHOOK_DATABASE_URL to its DSN, for example:
+      #   WHOOK_DATABASE_URL=postgres://whook:whook@postgres:5432/whook?sslmode=disable
+      WHOOK_DATABASE_URL: "${WHOOK_DATABASE_URL:-file:/data/whook.db?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)}"
       # Set these in a .env file or your shell. Empty admin token leaves the
       # management API open, which is only safe for local use.
       WHOOK_ADMIN_TOKEN: "${WHOOK_ADMIN_TOKEN:-}"
@@ -22,5 +25,23 @@ services:
       retries: 3
       start_period: 5s
 
+  # Optional Postgres backend. Enable with: docker compose --profile postgres up
+  postgres:
+    image: postgres:16-alpine
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:-whook}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-whook}"
+      POSTGRES_DB: "${POSTGRES_DB:-whook}"
+    volumes:
+      - whook-pg:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "whook"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   whook-data:
+  whook-pg:

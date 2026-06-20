@@ -7,6 +7,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/edaywalid/whook/internal/api"
@@ -19,6 +20,8 @@ import (
 	"github.com/edaywalid/whook/internal/retry"
 	"github.com/edaywalid/whook/internal/signature"
 	"github.com/edaywalid/whook/internal/source"
+	"github.com/edaywalid/whook/internal/storage"
+	"github.com/edaywalid/whook/internal/storage/postgres"
 	"github.com/edaywalid/whook/internal/storage/sqlite"
 	"github.com/edaywalid/whook/internal/worker"
 )
@@ -26,11 +29,12 @@ import (
 // Run builds the gateway from cfg and blocks until ctx is cancelled, then shuts
 // down gracefully.
 func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
-	store, err := sqlite.Open(ctx, cfg.DatabaseURL)
+	store, err := openStore(ctx, cfg.DatabaseURL)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = store.Close() }()
+	logger.Info("storage ready", "backend", backendName(cfg.DatabaseURL))
 
 	sealer, err := crypto.NewSealer(cfg.SecretKey)
 	if err != nil {
@@ -105,4 +109,24 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 		logger.Error("http shutdown", "error", err)
 	}
 	return nil
+}
+
+// openStore selects the storage backend from the DSN scheme: postgres:// (or
+// postgresql://) uses Postgres, anything else uses SQLite.
+func openStore(ctx context.Context, dsn string) (storage.Store, error) {
+	if isPostgres(dsn) {
+		return postgres.Open(ctx, dsn)
+	}
+	return sqlite.Open(ctx, dsn)
+}
+
+func backendName(dsn string) string {
+	if isPostgres(dsn) {
+		return "postgres"
+	}
+	return "sqlite"
+}
+
+func isPostgres(dsn string) bool {
+	return strings.HasPrefix(dsn, "postgres://") || strings.HasPrefix(dsn, "postgresql://")
 }

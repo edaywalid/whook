@@ -140,7 +140,7 @@ All settings come from environment variables.
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `WHOOK_ADDR` | `:8080` | HTTP listen address |
-| `WHOOK_DATABASE_URL` | `file:whook.db?...` | SQLite DSN |
+| `WHOOK_DATABASE_URL` | `file:whook.db?...` | Storage DSN. A `postgres://` or `postgresql://` URL selects Postgres; anything else is SQLite |
 | `WHOOK_ADMIN_TOKEN` | empty | Bearer token for the management API and dashboard. Empty disables auth (local only) |
 | `WHOOK_SECRET_KEY` | empty | Passphrase to encrypt provider signing secrets at rest |
 | `WHOOK_MAX_BODY_BYTES` | `1048576` | Max inbound body size; larger is rejected with 413 |
@@ -149,6 +149,21 @@ All settings come from environment variables.
 | `WHOOK_RETENTION_AGE` | empty | Delete received events older than this (e.g. `720h`). Empty disables pruning |
 | `WHOOK_FAILED_RETENTION_AGE` | = retention | Keep rejected and dead-lettered events longer |
 | `WHOOK_PRUNE_INTERVAL` | `1h` | How often the pruner runs |
+
+### Postgres
+
+SQLite is the default and needs nothing extra. For larger or multi-instance
+deploys, point `WHOOK_DATABASE_URL` at Postgres. The gateway applies its
+Postgres migrations on startup and claims the delivery queue with
+`SELECT ... FOR UPDATE SKIP LOCKED`, so many workers and instances share one
+queue safely.
+
+```sh
+WHOOK_DATABASE_URL=postgres://whook:whook@localhost:5432/whook?sslmode=disable
+```
+
+With the bundled compose file: `docker compose --profile postgres up` and set
+the DSN above (host `postgres`).
 
 ## HTTP API
 
@@ -167,7 +182,7 @@ All settings come from environment variables.
 ## Stack
 
 - Go, single static binary
-- SQLite for storage (pure-Go driver, no cgo); Postgres-ready storage interface
+- SQLite by default (pure-Go driver, no cgo) or Postgres for scale, behind one storage interface
 - Standard library HTTP, server-rendered dashboard
 - dbmate for migrations
 - Landing page in `web/` (TanStack Start, deployed at [whook-gateway.netlify.app](https://whook-gateway.netlify.app))
