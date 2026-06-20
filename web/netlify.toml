@@ -1,0 +1,10 @@
+# whook landing page. Prerendered to static HTML; deploys as a static site.
+[build]
+  base = "web"
+  command = "npm run build"
+  publish = "dist/client"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
