@@ -10,7 +10,7 @@ export function Quickstart() {
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
           <Reveal className="lg:col-span-4">
             <p className="font-mono text-xs uppercase tracking-[0.16em] text-teal-bright">
-              Send a webhook
+              Quickstart
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
               Point your provider at whook instead.

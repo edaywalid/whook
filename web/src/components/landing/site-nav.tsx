@@ -5,8 +5,8 @@ import { Wordmark } from '../wordmark'
 const NAV_LINKS = [
   { label: 'How it works', href: '#how' },
   { label: 'Features', href: '#features' },
-  { label: 'Get started', href: '#get-started' },
-  { label: 'Docs', href: '#docs' },
+  { label: 'Quickstart', href: '#quickstart' },
+  { label: 'Docs', href: '/docs' },
 ] as const
 
 export function SiteNav() {
