@@ -13,10 +13,7 @@ export function SiteFooter() {
           <a href={REPO_URL} className="text-body transition-colors hover:text-ink">
             GitHub
           </a>
-          <a
-            href={`${REPO_URL}#readme`}
-            className="text-body transition-colors hover:text-ink"
-          >
+          <a href="/docs" className="text-body transition-colors hover:text-ink">
             Docs
           </a>
         </div>

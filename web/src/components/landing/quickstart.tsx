@@ -1,5 +1,4 @@
 import { ArrowRight } from 'lucide-react'
-import { REPO_URL } from '../../lib/constants'
 import { Reveal } from '../reveal'
 import { Terminal } from './terminal'
 
@@ -20,7 +19,7 @@ export function Quickstart() {
               in is captured, listed, and replayable.
             </p>
             <a
-              href={`${REPO_URL}#readme`}
+              href="/docs"
               className="pressable mt-7 inline-flex items-center gap-2 text-sm font-medium text-teal-bright hover:text-teal"
             >
               Read the docs
