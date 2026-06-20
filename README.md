@@ -10,7 +10,7 @@
 &nbsp;![Go 1.25](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go&logoColor=white)
 &nbsp;[![Live demo](https://img.shields.io/badge/demo-whook--gateway.netlify.app-0f766e)](https://whook-gateway.netlify.app)
 
-[Live demo](https://whook-gateway.netlify.app) · [Quick start](#quick-start) · [How it works](#how-it-works) · [HTTP API](#http-api) · [Self-host](#run-with-docker)
+[Getting started](#getting-started) · [Documentation](docs/) · [Live demo](https://whook-gateway.netlify.app) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -35,6 +35,16 @@ replay anything that came in.
 - A durable record of every request, queryable and replayable from an API or UI.
 - Pluggable signature verification (Stripe, GitHub), idempotent capture, metrics.
 - One static Go binary. SQLite built in, Postgres when you outgrow it.
+
+## Table of contents
+
+- [The problem](#the-problem)
+- [How it works](#how-it-works)
+- [Getting started](#getting-started)
+- [Documentation](#documentation)
+- [Tech stack](#tech-stack)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## The problem
 
@@ -68,29 +78,53 @@ destination being down never costs you an event.
   <img alt="Provider to ingest with a signature gate and a fast 2xx ack, to a durable store, a router, delivery workers, and your services, with dead-letter and replay branches" src="docs/diagrams/assets/architecture-light.png">
 </picture>
 
-### Reliable delivery
-
-A failed delivery is retried on a deterministic exponential schedule (a 429 honors
-its `Retry-After`). When the retry budget is exhausted the delivery is dead-lettered,
-so it stops consuming resources and becomes visible for inspection and replay.
+**Reliable delivery.** A failed delivery is retried on a deterministic exponential
+schedule (a 429 honors its `Retry-After`). When the retry budget is exhausted the
+delivery is dead-lettered, so it stops consuming resources and becomes visible for
+inspection and replay.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/assets/retry-timeline-dark.png">
   <img alt="A failed delivery is retried with growing backoff gaps until one returns 200, or the budget is exhausted and it is dead-lettered" src="docs/diagrams/assets/retry-timeline-light.png">
 </picture>
 
-### Fan-out
-
-One captured event resolves to every matching destination as an independent delivery
-track, each with its own filter and status. A failing destination never blocks the
-others.
+**Fan-out.** One captured event resolves to every matching destination as an
+independent delivery track, each with its own filter and status. A failing
+destination never blocks the others.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/assets/fan-out-dark.png">
   <img alt="One event delivered to billing, email, and analytics as independent tracks, each with its own filter and status" src="docs/diagrams/assets/fan-out-light.png">
 </picture>
 
-## Quick start
+## Getting started
+
+### Install
+
+**Docker** (prebuilt multi-arch image, recommended):
+
+```sh
+docker run -p 8080:8080 -v whook-data:/data ghcr.io/edaywalid/whook:latest
+```
+
+**Docker Compose** (builds the full stack from source):
+
+```sh
+cp .env.example .env   # set WHOOK_ADMIN_TOKEN and WHOOK_SECRET_KEY
+docker compose up --build -d
+```
+
+**From source** (Go 1.25+):
+
+```sh
+go install github.com/edaywalid/whook/cmd/whook@latest
+whook
+```
+
+The gateway listens on `http://localhost:8080` and stores events in a local SQLite
+file by default. See [Deployment](docs/deployment.md) for Postgres and scaling.
+
+### Send your first webhook
 
 ```sh
 # 1. Register a source (the provider integration)
@@ -111,94 +145,29 @@ curl localhost:8080/events
 
 Open `http://localhost:8080/ui` for the dashboard: it lists events, links to a
 per-event detail page (payload, delivery state, attempt history, replay button),
-and has a dead-letter view. With an admin token set, pass it as
-`Authorization: Bearer <token>` (or `?token=` for the dashboard).
+and has a dead-letter view.
 
-## Run with Docker
+## Documentation
 
-Prebuilt multi-arch images (linux/amd64, linux/arm64) are published to GitHub
-Container Registry on every push to `main` and every `v*` tag:
+- **[Configuration](docs/configuration.md)**: every environment variable, auth, secrets, retention, and rate limiting.
+- **[HTTP API](docs/http-api.md)**: endpoints, sources, destinations, the filter spec, and replay.
+- **[Deployment](docs/deployment.md)**: Docker, the GHCR image, Compose, building from source, and Postgres.
+- **[Contributing](CONTRIBUTING.md)**: how to build, test, and submit changes.
 
-```sh
-docker run -p 8080:8080 -v whook-data:/data ghcr.io/edaywalid/whook:latest
-```
-
-Or build and run the full stack from source with compose:
-
-```sh
-cp .env.example .env   # set WHOOK_ADMIN_TOKEN and WHOOK_SECRET_KEY
-docker compose up --build -d
-```
-
-The gateway listens on `http://localhost:8080`. Data persists in the `whook-data`
-volume.
-
-## Run locally
-
-```sh
-go build ./...
-go test ./...
-go run ./cmd/whook
-```
-
-It defaults to a SQLite file (`whook.db`) in the working directory.
-
-## Configuration
-
-All settings come from environment variables.
-
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `WHOOK_ADDR` | `:8080` | HTTP listen address |
-| `WHOOK_DATABASE_URL` | `file:whook.db?...` | Storage DSN. A `postgres://` or `postgresql://` URL selects Postgres; anything else is SQLite |
-| `WHOOK_ADMIN_TOKEN` | empty | Bearer token for the management API and dashboard. Empty disables auth (local only) |
-| `WHOOK_SECRET_KEY` | empty | Passphrase to encrypt provider signing secrets at rest |
-| `WHOOK_MAX_BODY_BYTES` | `1048576` | Max inbound body size; larger is rejected with 413 |
-| `WHOOK_WORKERS` | `4` | Concurrent delivery workers |
-| `WHOOK_POLL_INTERVAL` | `1s` | How often workers poll the queue |
-| `WHOOK_RETENTION_AGE` | empty | Delete received events older than this (e.g. `720h`). Empty disables pruning |
-| `WHOOK_FAILED_RETENTION_AGE` | = retention | Keep rejected and dead-lettered events longer |
-| `WHOOK_PRUNE_INTERVAL` | `1h` | How often the pruner runs |
-| `WHOOK_INGEST_RATE` | `0` | Max ingest requests per second per source. `0` disables limiting |
-| `WHOOK_INGEST_BURST` | = rate | Token-bucket burst size for ingest limiting |
-
-### Postgres
-
-SQLite is the default and needs nothing extra. For larger or multi-instance
-deploys, point `WHOOK_DATABASE_URL` at Postgres. The gateway applies its
-Postgres migrations on startup and claims the delivery queue with
-`SELECT ... FOR UPDATE SKIP LOCKED`, so many workers and instances share one
-queue safely.
-
-```sh
-WHOOK_DATABASE_URL=postgres://whook:whook@localhost:5432/whook?sslmode=disable
-```
-
-With the bundled compose file: `docker compose --profile postgres up` and set
-the DSN above (host `postgres`).
-
-## HTTP API
-
-| Method & path | Purpose |
-| --- | --- |
-| `POST /ingest/{source}` | Capture an inbound webhook (public) |
-| `GET /healthz` | Liveness check (public) |
-| `GET /metrics` | Prometheus metrics (ingest, delivery, dead-letter) |
-| `GET /events` | List captured events |
-| `GET /events/{id}` | Event detail with per-destination delivery state and attempt history |
-| `POST /events/{id}/replay` | Re-deliver an event (optional `?destination_id=`) |
-| `GET /deadletters` | List deliveries that exhausted their retry budget |
-| `GET/POST /sources`, `PATCH /sources/{name}` | Manage sources |
-| `GET/POST /destinations`, `PATCH /destinations/{id}` | Manage destinations |
-
-## Stack
+## Tech stack
 
 - Go, single static binary
 - SQLite by default (pure-Go driver, no cgo) or Postgres for scale, behind one storage interface
 - Standard library HTTP, server-rendered dashboard
-- dbmate for migrations
-- Landing page in `web/` (TanStack Start, deployed at [whook-gateway.netlify.app](https://whook-gateway.netlify.app))
+- dbmate-authored migrations, embedded and applied on startup
+- Landing page in `web/` (TanStack Start, React 19, deployed at [whook-gateway.netlify.app](https://whook-gateway.netlify.app))
+
+## Contributing
+
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for
+how to build, run the tests (including the Postgres integration tests), and the
+migration and code-style conventions.
 
 ## License
 
-MIT
+[MIT](LICENSE)
