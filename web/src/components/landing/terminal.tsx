@@ -1,4 +1,4 @@
-type Tone = 'comment' | 'out' | 'cmd'
+type Tone = 'comment' | 'out' | 'cmd' | 'cont'
 type Line = { id: string; text: string; tone: Tone }
 
 const TERMINAL_LINES: Line[] = [
@@ -7,11 +7,11 @@ const TERMINAL_LINES: Line[] = [
   { id: 's1', tone: 'comment', text: '' },
   { id: 'c2', tone: 'comment', text: '# 2. Point it at one or more destinations' },
   { id: 'l2', tone: 'cmd', text: 'curl -X POST localhost:8080/destinations \\' },
-  { id: 'l3', tone: 'cmd', text: "     -d '{\"source\":\"stripe\",\"url\":\"https://app.internal/hooks\"}'" },
+  { id: 'l3', tone: 'cont', text: "    -d '{\"source\":\"stripe\",\"url\":\"https://app.internal/hooks\"}'" },
   { id: 's2', tone: 'comment', text: '' },
   { id: 'c3', tone: 'comment', text: '# 3. Send a webhook to whook' },
   { id: 'l4', tone: 'cmd', text: 'curl -X POST localhost:8080/ingest/stripe \\' },
-  { id: 'l5', tone: 'cmd', text: "     -d '{\"type\":\"payment.succeeded\",\"amount\":4900}'" },
+  { id: 'l5', tone: 'cont', text: "    -d '{\"type\":\"payment.succeeded\",\"amount\":4900}'" },
   { id: 'o1', tone: 'out', text: '{"event_id":"evt_9f3a21c8b4e07d56"}' },
   { id: 's3', tone: 'comment', text: '' },
   { id: 'c4', tone: 'comment', text: '# 4. Inspect and replay anything that arrived' },
@@ -35,6 +35,11 @@ export function Terminal() {
                 <span className="text-[#5f6f6b]">{line.text || ' '}</span>
               ) : line.tone === 'out' ? (
                 <span className="tnum text-[#5fb8a8]">{line.text}</span>
+              ) : line.tone === 'cont' ? (
+                <span className="text-[#d7e2de]">
+                  <span className="text-[#5f6f6b]">{'> '}</span>
+                  {line.text}
+                </span>
               ) : (
                 <span className="text-[#d7e2de]">
                   <span className="text-teal-bright">$ </span>
