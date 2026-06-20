@@ -21,7 +21,10 @@ the provider is happy, then forwards the event to one or more destinations with
 automatic retries. Every request is stored durably, so you can list, inspect, and
 replay anything that came in.
 
-![Stripe sends a webhook to whook, which returns a fast 200, saves the event to a durable store, and delivers it to your app](docs/diagrams/assets/capture-flow.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/assets/capture-flow-dark.png">
+  <img alt="Stripe sends a webhook to whook, which returns a fast 200, saves the event to a durable store, and delivers it to your app" src="docs/diagrams/assets/capture-flow-light.png">
+</picture>
 
 **What you get**
 
@@ -48,7 +51,10 @@ Point a provider straight at your application and it is fragile:
   may all need the same event, which forces hand-written fan-out glue.
 - There is no simple way to replay a past webhook to reproduce a bug or recover.
 
-![Without a gateway, a webhook sent while your app is deploying breaks, the event falls away, and it is lost with no retry and no record](docs/diagrams/assets/without-whook.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/assets/without-whook-dark.png">
+  <img alt="Without a gateway, a webhook sent while your app is deploying breaks, the event falls away, and it is lost with no retry and no record" src="docs/diagrams/assets/without-whook-light.png">
+</picture>
 
 ## How it works
 
@@ -56,7 +62,10 @@ Capture is decoupled from delivery. An inbound request is saved durably **before
 it is acknowledged. Delivery happens afterward, on whook's own schedule, so a
 destination being down never costs you an event.
 
-![Provider to ingest with a signature gate and a fast 2xx ack, to a durable store, a router, delivery workers, and your services, with dead-letter and replay branches](docs/diagrams/assets/architecture.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/assets/architecture-dark.png">
+  <img alt="Provider to ingest with a signature gate and a fast 2xx ack, to a durable store, a router, delivery workers, and your services, with dead-letter and replay branches" src="docs/diagrams/assets/architecture-light.png">
+</picture>
 
 ### Reliable delivery
 
@@ -64,7 +73,10 @@ A failed delivery is retried on a deterministic exponential schedule (a 429 hono
 its `Retry-After`). When the retry budget is exhausted the delivery is dead-lettered,
 so it stops consuming resources and becomes visible for inspection and replay.
 
-![A failed delivery is retried with growing backoff gaps until one returns 200, or the budget is exhausted and it is dead-lettered](docs/diagrams/assets/retry-timeline.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/assets/retry-timeline-dark.png">
+  <img alt="A failed delivery is retried with growing backoff gaps until one returns 200, or the budget is exhausted and it is dead-lettered" src="docs/diagrams/assets/retry-timeline-light.png">
+</picture>
 
 ### Fan-out
 
@@ -72,7 +84,10 @@ One captured event resolves to every matching destination as an independent deli
 track, each with its own filter and status. A failing destination never blocks the
 others.
 
-![One event delivered to billing, email, and analytics as independent tracks, each with its own filter and status](docs/diagrams/assets/fan-out.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/assets/fan-out-dark.png">
+  <img alt="One event delivered to billing, email, and analytics as independent tracks, each with its own filter and status" src="docs/diagrams/assets/fan-out-light.png">
+</picture>
 
 ## Quick start
 
