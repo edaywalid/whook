@@ -17,24 +17,24 @@
   --color-hairline: #223230;
 
   /* brand teal */
-  --color-teal: #0f766e;
+  --color-teal: #14b8a6;
   --color-teal-bright: #2dd4bf;
-  --color-teal-strong: #0b5d56;
-  --color-teal-soft: #cdeae5;
-  --color-teal-tint: #eaf8f4;
+  --color-teal-strong: #5fe3d3;
+  --color-teal-soft: #bdeee6;
+  --color-teal-tint: #133029;
 
-  /* status (read well on the light diagram cards) */
-  --color-http: #3a6ea5;
-  --color-warn: #a8620c;
-  --color-dead: #c2515c;
+  /* status, brightened to read on the dark diagram cards */
+  --color-http: #6f9fd8;
+  --color-warn: #e0a23c;
+  --color-dead: #e0707a;
 
-  /* light card palette for the diagram visuals */
-  --color-card: #ffffff;
-  --color-card-2: #f6f5f1;
-  --color-cink: #17211f;
-  --color-cbody: #3b4845;
-  --color-cmuted: #6c7a76;
-  --color-cline: #e4e1d9;
+  /* dark card palette for the diagram visuals (nodes sit on a darker panel) */
+  --color-card: #1a2421;
+  --color-card-2: #131c1a;
+  --color-cink: #e9efed;
+  --color-cbody: #aab4b1;
+  --color-cmuted: #828e8a;
+  --color-cline: #2d3c38;
 
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);

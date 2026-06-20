@@ -48,7 +48,7 @@ export function Hero() {
 
         <div className="lg:col-span-7">
           <Reveal delay={0.2} y={28}>
-            <figure className="rounded-2xl bg-card p-5 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.75),0_0_90px_-25px_rgba(45,212,191,0.45)] sm:p-7">
+            <figure className="rounded-2xl border border-hairline bg-surface p-5 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.75),0_0_90px_-25px_rgba(45,212,191,0.45)] sm:p-7">
               <figcaption className="mb-4 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.14em] text-cmuted">
                 <span>capture &rarr; deliver</span>
                 <span className="inline-flex items-center gap-1.5 text-teal-strong">
