@@ -114,6 +114,11 @@ cp .env.example .env   # set WHOOK_ADMIN_TOKEN and WHOOK_SECRET_KEY
 docker compose up --build -d
 ```
 
+**Prebuilt binary** (Linux, macOS, Windows on amd64 and arm64):
+
+Download the binary for your platform from the
+[latest release](https://github.com/edaywalid/whook/releases/latest), then run it.
+
 **From source** (Go 1.25+):
 
 ```sh
