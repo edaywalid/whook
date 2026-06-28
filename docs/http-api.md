@@ -51,8 +51,8 @@ curl -X POST localhost:8080/sources -d '{
 }'
 ```
 
-- `verifier` (optional): `stripe` or `github`. Requests that fail verification are
-  captured but never delivered.
+- `verifier` (optional): one of `stripe`, `github`, `shopify`, `slack`, or `linear`.
+  Requests that fail verification are captured but never delivered.
 - `secret` (optional, write-only): the provider signing secret, stored encrypted.
 - `dedup_header` (optional): a header carrying the provider's event id. Re-sent
   events with the same key collapse into one.

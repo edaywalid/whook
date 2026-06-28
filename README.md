@@ -33,7 +33,7 @@ replay anything that came in.
 - Exponential-backoff retries with a budget, then dead-letter for what never lands.
 - Fan-out to many destinations, each with its own filter, retries, and status.
 - A durable record of every request, queryable and replayable from an API or UI.
-- Pluggable signature verification (Stripe, GitHub), idempotent capture, metrics.
+- Pluggable signature verification (Stripe, GitHub, Shopify, Slack, Linear), idempotent capture, metrics.
 - One static Go binary. SQLite built in, Postgres when you outgrow it.
 
 ## Table of contents
@@ -113,6 +113,11 @@ docker run -p 8080:8080 -v whook-data:/data ghcr.io/edaywalid/whook:latest
 cp .env.example .env   # set WHOOK_ADMIN_TOKEN and WHOOK_SECRET_KEY
 docker compose up --build -d
 ```
+
+**Prebuilt binary** (Linux, macOS, Windows on amd64 and arm64):
+
+Download the binary for your platform from the
+[latest release](https://github.com/edaywalid/whook/releases/latest), then run it.
 
 **From source** (Go 1.25+):
 

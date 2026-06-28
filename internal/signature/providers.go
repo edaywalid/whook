@@ -3,6 +3,7 @@ package signature
 import (
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"strings"
 )
@@ -57,16 +58,80 @@ func (GitHub) Verify(secret []byte, req Request) error {
 	return nil
 }
 
+// Shopify verifies the X-Shopify-Hmac-Sha256 header, which is the base64-encoded
+// HMAC-SHA256 of the raw body keyed by the app's webhook secret.
+type Shopify struct{}
+
+func (Shopify) Verify(secret []byte, req Request) error {
+	sig := header(req.Headers, "X-Shopify-Hmac-Sha256")
+	if sig == "" {
+		return ErrInvalid
+	}
+	if !hmacEqualBase64(secret, req.Body, sig) {
+		return ErrInvalid
+	}
+	return nil
+}
+
+// Slack verifies the X-Slack-Signature header. The signed payload is
+// "v0:{timestamp}:{body}" and the signature is "v0=" followed by its hex
+// HMAC-SHA256, with the timestamp read from X-Slack-Request-Timestamp.
+type Slack struct{}
+
+func (Slack) Verify(secret []byte, req Request) error {
+	hexSig, ok := strings.CutPrefix(header(req.Headers, "X-Slack-Signature"), "v0=")
+	if !ok || hexSig == "" {
+		return ErrInvalid
+	}
+	ts := header(req.Headers, "X-Slack-Request-Timestamp")
+	if ts == "" {
+		return ErrInvalid
+	}
+	signed := "v0:" + ts + ":" + string(req.Body)
+	if !hmacEqual(secret, []byte(signed), hexSig) {
+		return ErrInvalid
+	}
+	return nil
+}
+
+// Linear verifies the Linear-Signature header, which is the hex HMAC-SHA256 of
+// the raw body keyed by the webhook signing secret.
+type Linear struct{}
+
+func (Linear) Verify(secret []byte, req Request) error {
+	sig := header(req.Headers, "Linear-Signature")
+	if sig == "" {
+		return ErrInvalid
+	}
+	if !hmacEqual(secret, req.Body, sig) {
+		return ErrInvalid
+	}
+	return nil
+}
+
 // hmacEqual reports whether the hex-encoded HMAC-SHA256 of message under key
 // equals wantHex, using a constant-time comparison.
 func hmacEqual(key, message []byte, wantHex string) bool {
-	mac := hmac.New(sha256.New, key)
-	mac.Write(message)
-	got := mac.Sum(nil)
-
 	want, err := hex.DecodeString(wantHex)
 	if err != nil {
 		return false
 	}
-	return hmac.Equal(got, want)
+	return hmacEqualRaw(key, message, want)
+}
+
+// hmacEqualBase64 is hmacEqual for a base64-encoded (standard encoding) digest.
+func hmacEqualBase64(key, message []byte, wantB64 string) bool {
+	want, err := base64.StdEncoding.DecodeString(wantB64)
+	if err != nil {
+		return false
+	}
+	return hmacEqualRaw(key, message, want)
+}
+
+// hmacEqualRaw reports whether the HMAC-SHA256 of message under key equals the
+// raw digest want, using a constant-time comparison.
+func hmacEqualRaw(key, message, want []byte) bool {
+	mac := hmac.New(sha256.New, key)
+	mac.Write(message)
+	return hmac.Equal(mac.Sum(nil), want)
 }
