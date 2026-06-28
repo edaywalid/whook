@@ -1,0 +1,60 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  binaries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      - name: Build release binaries
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          mkdir -p dist
+          targets="linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64"
+          for t in $targets; do
+            os=${t%/*}; arch=${t#*/}
+            out="dist/whook_${VERSION}_${os}_${arch}"
+            ext=""
+            if [ "$os" = "windows" ]; then ext=".exe"; fi
+            echo "building $out$ext"
+            CGO_ENABLED=0 GOOS=$os GOARCH=$arch \
+              go build -ldflags="-s -w -X main.version=${VERSION}" \
+              -o "${out}${ext}" ./cmd/whook
+            (cd dist && sha256sum "$(basename "${out}${ext}")" >> checksums.txt)
+          done
+
+      - name: Extract changelog section
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          v=${VERSION#v}
+          awk -v ver="$v" '
+            $0 ~ "^## \\[" ver "\\]" {grab=1; next}
+            grab && /^## \[/ {exit}
+            grab {print}
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "Release ${VERSION}." > release-notes.md
+          fi
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --notes-file release-notes.md \
+            dist/whook_* dist/checksums.txt
