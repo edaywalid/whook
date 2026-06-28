@@ -33,7 +33,7 @@ replay anything that came in.
 - Exponential-backoff retries with a budget, then dead-letter for what never lands.
 - Fan-out to many destinations, each with its own filter, retries, and status.
 - A durable record of every request, queryable and replayable from an API or UI.
-- Pluggable signature verification (Stripe, GitHub), idempotent capture, metrics.
+- Pluggable signature verification (Stripe, GitHub, Shopify, Slack, Linear), idempotent capture, metrics.
 - One static Go binary. SQLite built in, Postgres when you outgrow it.
 
 ## Table of contents
