@@ -1,0 +1,36 @@
+name: New provider verifier
+description: Request or volunteer a signature verifier for a webhook provider.
+labels: ["enhancement", "good first issue", "provider"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Adding a verifier is a self-contained change and a great first contribution.
+        See `internal/signature/providers.go` for the existing ones, then register
+        the new verifier in `NewRegistry` and add a table test.
+  - type: input
+    id: provider
+    attributes:
+      label: Provider
+      description: The service whose webhooks you want to verify (for example Square, Twilio, Paddle).
+    validations:
+      required: true
+  - type: input
+    id: header
+    attributes:
+      label: Signature header
+      description: The header that carries the signature (for example X-Signature).
+  - type: textarea
+    id: scheme
+    attributes:
+      label: Signing scheme
+      description: How the signature is computed, with a link to the provider's docs.
+      placeholder: HMAC-SHA256 of the raw body, hex-encoded, keyed by the signing secret.
+    validations:
+      required: true
+  - type: checkboxes
+    id: contributing
+    attributes:
+      label: Are you planning to open a PR?
+      options:
+        - label: I would like to implement this myself

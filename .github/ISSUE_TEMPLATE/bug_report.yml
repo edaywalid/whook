@@ -1,0 +1,43 @@
+name: Bug report
+description: Something is not working the way you expected.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: A minimal sequence of requests or commands that triggers the problem.
+      placeholder: |
+        1. curl -X POST localhost:8080/sources -d '...'
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `whook --version`, or the Docker image tag.
+    validations:
+      required: true
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Storage backend
+      options:
+        - SQLite
+        - Postgres
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Paste any gateway logs around the failure. This will be rendered as code.
+      render: text
