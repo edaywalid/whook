@@ -61,12 +61,14 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 		Interval:           cfg.PruneInterval,
 	})
 
+	ingestLimiter := ratelimit.New(cfg.IngestRate, cfg.IngestBurst)
+
 	srv := api.NewServer(api.Config{
 		Store:         store,
 		Capturer:      capturer,
 		Sources:       sources,
 		Metrics:       metricsCollector,
-		IngestLimiter: ratelimit.New(cfg.IngestRate, cfg.IngestBurst),
+		IngestLimiter: ingestLimiter,
 		AdminToken:    cfg.AdminToken,
 		MaxBody:       cfg.MaxBodyBytes,
 		Logger:        logger,
@@ -90,6 +92,9 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 			errCh <- err
 		}
 	}()
+	// Sweep idle rate-limiter buckets so the per-source key map cannot grow
+	// without bound when requests arrive under many distinct source names.
+	go ingestLimiter.RunEviction(ctx, cfg.IngestEvictInterval, cfg.IngestIdleTTL)
 	if retentionPruner.Enabled() {
 		logger.Info("retention pruning enabled", "retention", cfg.RetentionAge, "interval", cfg.PruneInterval)
 	}

@@ -44,6 +44,13 @@ type Config struct {
 	// second of capacity.
 	IngestRate  float64
 	IngestBurst int
+
+	// Rate-limiter eviction. The limiter keeps a token bucket per source key;
+	// EvictInterval is how often idle buckets are swept and IdleTTL is how long a
+	// bucket may go unused before it is removed. Without this the key map grows
+	// without bound when requests arrive under many distinct source names.
+	IngestEvictInterval time.Duration
+	IngestIdleTTL       time.Duration
 }
 
 // Load reads configuration from the environment, applying defaults.
@@ -63,6 +70,9 @@ func Load() (Config, error) {
 
 		IngestRate:  envFloat("WHOOK_INGEST_RATE", 0),
 		IngestBurst: int(envInt64("WHOOK_INGEST_BURST", 0)),
+
+		IngestEvictInterval: envDuration("WHOOK_INGEST_EVICT_INTERVAL", 10*time.Minute),
+		IngestIdleTTL:       envDuration("WHOOK_INGEST_IDLE_TTL", time.Hour),
 	}
 
 	// Failed events are kept at least as long as received ones.
