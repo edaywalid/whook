@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/edaywalid/whook/internal/crypto"
@@ -51,6 +52,33 @@ func TestRegisterAndGet(t *testing.T) {
 	}
 	if got.Verifier != "stripe" || got.DedupHeader != "Stripe-Id" {
 		t.Fatalf("unexpected source: %+v", got)
+	}
+}
+
+func TestRegisterRejectsBadNames(t *testing.T) {
+	svc := newService(t)
+	bad := map[string]string{
+		"empty":        "",
+		"with space":   "my source",
+		"with slash":   "a/b",
+		"with tab":     "a\tb",
+		"with newline": "a\nb",
+		"too long":     strings.Repeat("x", 129),
+		"control char": "a\x00b",
+	}
+	for name, value := range bad {
+		t.Run(name, func(t *testing.T) {
+			if _, err := svc.Register(context.Background(), source.Input{Name: value}); err == nil {
+				t.Fatalf("expected error registering name %q", value)
+			}
+		})
+	}
+}
+
+func TestUpdateRejectsBadName(t *testing.T) {
+	svc := newService(t)
+	if _, err := svc.Update(context.Background(), source.Input{Name: "bad name"}); err == nil {
+		t.Fatal("expected error updating a source with an invalid name")
 	}
 }
 

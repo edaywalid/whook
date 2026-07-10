@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"unicode"
 
 	"github.com/edaywalid/whook/internal/core"
 	"github.com/edaywalid/whook/internal/crypto"
@@ -16,6 +17,30 @@ import (
 
 // ErrUnknownVerifier means the requested verifier is not registered.
 var ErrUnknownVerifier = errors.New("source: unknown verifier")
+
+// maxNameLen bounds a source name. The name is used as the ingest URL path
+// segment (POST /ingest/{name}) and as the rate-limiter key, so it must be a
+// short, printable single-segment token.
+const maxNameLen = 128
+
+// validateName rejects source names that are empty, too long, or contain
+// characters that do not belong in a URL path segment or a map key. This keeps
+// bad names out at registration time rather than surfacing them as awkward
+// ingest paths later.
+func validateName(name string) error {
+	if name == "" {
+		return errors.New("source: name is required")
+	}
+	if len(name) > maxNameLen {
+		return fmt.Errorf("source: name must be at most %d characters", maxNameLen)
+	}
+	for _, r := range name {
+		if unicode.IsSpace(r) || unicode.IsControl(r) || r == '/' {
+			return errors.New("source: name must not contain spaces, control characters, or '/'")
+		}
+	}
+	return nil
+}
 
 // Service is the source registry.
 type Service struct {
@@ -47,8 +72,8 @@ type Input struct {
 
 // Register creates a new source.
 func (s *Service) Register(ctx context.Context, in Input) (core.Source, error) {
-	if in.Name == "" {
-		return core.Source{}, errors.New("source: name is required")
+	if err := validateName(in.Name); err != nil {
+		return core.Source{}, err
 	}
 	if err := s.checkVerifier(in.Verifier); err != nil {
 		return core.Source{}, err
@@ -75,6 +100,9 @@ func (s *Service) Register(ctx context.Context, in Input) (core.Source, error) {
 
 // Update changes an existing source. A non-empty Secret replaces the stored one.
 func (s *Service) Update(ctx context.Context, in Input) (core.Source, error) {
+	if err := validateName(in.Name); err != nil {
+		return core.Source{}, err
+	}
 	if err := s.checkVerifier(in.Verifier); err != nil {
 		return core.Source{}, err
 	}
