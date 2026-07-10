@@ -73,11 +73,15 @@ func (s *Server) handleIngest(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleListEvents(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
+	if err := validateStatus(q.Get("status")); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 	filter := storage.EventFilter{
 		Source: q.Get("source"),
 		Status: core.EventStatus(q.Get("status")),
-		Limit:  atoiDefault(q.Get("limit"), 50),
-		Offset: atoiDefault(q.Get("offset"), 0),
+		Limit:  clampLimit(atoiDefault(q.Get("limit"), 50), 50),
+		Offset: clampOffset(atoiDefault(q.Get("offset"), 0)),
 	}
 	events, err := s.store.ListEvents(r.Context(), filter)
 	if err != nil {
@@ -134,7 +138,7 @@ func (s *Server) destinationURLs(ctx context.Context, source string) func(string
 
 func (s *Server) handleListDeadLetters(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
-	dead, err := s.store.ListDeadLetters(r.Context(), atoiDefault(q.Get("limit"), 50), atoiDefault(q.Get("offset"), 0))
+	dead, err := s.store.ListDeadLetters(r.Context(), clampLimit(atoiDefault(q.Get("limit"), 50), 50), clampOffset(atoiDefault(q.Get("offset"), 0)))
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "listing dead letters")
 		return
@@ -279,6 +283,10 @@ func (s *Server) handleCreateDestination(w http.ResponseWriter, r *http.Request)
 		writeError(w, http.StatusBadRequest, "source and url are required")
 		return
 	}
+	if err := validateDestinationInput(in); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
 	dest := core.Destination{
 		ID:         id.New("dst"),
@@ -311,6 +319,10 @@ func (s *Server) handleUpdateDestination(w http.ResponseWriter, r *http.Request)
 	var in destinationInput
 	if err := readJSON(r, &in); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid json body")
+		return
+	}
+	if err := validateDestinationInput(in); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	if in.URL != "" {

@@ -20,6 +20,8 @@ run it with no configuration at all for local use.
 | `WHOOK_PRUNE_INTERVAL` | `1h` | How often the retention pruner runs |
 | `WHOOK_INGEST_RATE` | `0` | Max ingest requests per second per source. `0` disables limiting |
 | `WHOOK_INGEST_BURST` | = rate | Token-bucket burst size for ingest limiting |
+| `WHOOK_INGEST_EVICT_INTERVAL` | `10m` | How often idle per-source rate-limiter buckets are swept |
+| `WHOOK_INGEST_IDLE_TTL` | `1h` | How long a source's rate-limiter bucket may sit idle before eviction |
 
 ## Authentication
 
@@ -50,6 +52,12 @@ longer `WHOOK_FAILED_RETENTION_AGE` so failures stay around for debugging. Set
 with an independent token bucket per source. Over-limit requests are shed early
 with a 429 and a `Retry-After` header, before the body is read. Leave it at `0` to
 accept everything.
+
+Each source key gets its own bucket, so requests to `POST /ingest/{source}` under
+many distinct names (including unknown ones, which are rate-limited before the
+404) would otherwise grow the bucket map without bound. A background sweep runs
+every `WHOOK_INGEST_EVICT_INTERVAL` and drops any bucket idle for longer than
+`WHOOK_INGEST_IDLE_TTL`, keeping memory bounded.
 
 ## Storage backends
 
