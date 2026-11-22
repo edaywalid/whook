@@ -36,31 +36,29 @@ func Matches(spec *core.FilterSpec, e core.Event) bool {
 
 func matchesBody(spec *core.FilterSpec, body map[string]any) bool {
 	for path, want := range spec.BodyEquals {
-		if got, found := lookup(body, path); !found || valueString(got) != want {
+		if !anyValue(body, path, func(got any) bool { return valueString(got) == want }) {
 			return false
 		}
 	}
 	for _, path := range spec.BodyExists {
-		if _, found := lookup(body, path); !found {
+		if !anyValue(body, path, func(any) bool { return true }) {
 			return false
 		}
 	}
 	for path, allowed := range spec.BodyIn {
-		got, found := lookup(body, path)
-		if !found || !slices.Contains(allowed, valueString(got)) {
+		if !anyValue(body, path, func(got any) bool { return slices.Contains(allowed, valueString(got)) }) {
 			return false
 		}
 	}
 	for path, prefix := range spec.BodyPrefix {
-		got, found := lookup(body, path)
-		if !found || !strings.HasPrefix(valueString(got), prefix) {
+		if !anyValue(body, path, func(got any) bool { return strings.HasPrefix(valueString(got), prefix) }) {
 			return false
 		}
 	}
 	for path, notWant := range spec.BodyNot {
 		// A field that equals the value fails. A missing field passes, since it
 		// does not equal anything.
-		if got, found := lookup(body, path); found && valueString(got) == notWant {
+		if anyValue(body, path, func(got any) bool { return valueString(got) == notWant }) {
 			return false
 		}
 	}
@@ -89,21 +87,35 @@ func parseJSONObject(body []byte) (map[string]any, bool) {
 	return obj, true
 }
 
-// lookup walks a dot-separated path through nested JSON objects.
-func lookup(obj map[string]any, path string) (any, bool) {
-	parts := strings.Split(path, ".")
-	var current any = obj
-	for _, part := range parts {
-		m, ok := current.(map[string]any)
-		if !ok {
-			return nil, false
-		}
-		current, ok = m[part]
-		if !ok {
-			return nil, false
-		}
+// anyValue reports whether pred holds for any value a dot-separated path
+// resolves to. A "*" segment fans out over every element of an array, so one
+// path can resolve to several values; without one it resolves to at most one.
+func anyValue(obj map[string]any, path string, pred func(any) bool) bool {
+	return anyValueAt(obj, strings.Split(path, "."), pred)
+}
+
+func anyValueAt(node any, parts []string, pred func(any) bool) bool {
+	if len(parts) == 0 {
+		return pred(node)
 	}
-	return current, true
+	part, rest := parts[0], parts[1:]
+	if items, ok := node.([]any); ok && part == "*" {
+		for _, item := range items {
+			if anyValueAt(item, rest, pred) {
+				return true
+			}
+		}
+		return false
+	}
+	m, ok := node.(map[string]any)
+	if !ok {
+		return false
+	}
+	child, ok := m[part]
+	if !ok {
+		return false
+	}
+	return anyValueAt(child, rest, pred)
 }
 
 // valueString renders a JSON leaf for comparison against the expected string.
