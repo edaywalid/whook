@@ -76,6 +76,11 @@ A destination only receives events that match its `filter_spec`. All clauses mus
 match (logical AND); an empty or absent spec matches everything. Body clauses
 address a JSON field by a dot-separated path (e.g. `data.object.status`).
 
+A `*` segment stands for every element of an array, so `data.assignees.*.id`
+addresses the `id` of each assignee. A clause on such a path matches when any
+element satisfies it; `body_not` therefore passes only when no element equals
+the value.
+
 | Clause | Example | Matches when |
 | --- | --- | --- |
 | `body_equals` | `{"type": "payment.succeeded"}` | the field equals the value |
