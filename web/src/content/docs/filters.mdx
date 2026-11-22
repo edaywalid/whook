@@ -8,6 +8,22 @@ matches everything.
 Body clauses address a JSON field by a dot-separated path, for example
 `data.object.status`. A non-JSON body fails any body clause.
 
+## Arrays
+
+A `*` segment stands for every element of an array. `data.assignees.*.id`
+addresses the `id` of each assignee, and `data.labels.*` addresses each label in
+an array of strings. Wildcards can be nested, as in `data.assignees.*.teams.*.slug`.
+
+A clause on a wildcard path matches when any element satisfies it:
+
+```json
+{ "body_equals": { "data.assignees.*.id": "u_42" } }
+```
+
+`body_not` is the inverse of `body_equals`, so it passes only when no element
+equals the value. An empty or missing array has no elements, so it fails every
+clause except `body_not`.
+
 ## Operators
 
 | Clause | Example | Matches when |

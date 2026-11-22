@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+
+- `*` segment in filter body paths to match against every element of an array, e.g. `data.assignees.*.id`.
+
 ## [0.1.0] - 2026-06-29
 
 First tagged release. whook captures inbound webhooks durably, acknowledges the

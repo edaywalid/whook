@@ -101,7 +101,10 @@ type BackoffConfig struct {
 
 // FilterSpec is a destination's routing filter. All clauses must match (AND);
 // an empty spec matches every event. Body clauses address a JSON field by a
-// dot-separated path (e.g. "data.object.status").
+// dot-separated path (e.g. "data.object.status"). A "*" segment stands for every
+// element of an array (e.g. "data.assignees.*.id"). Positive body clauses match
+// when any resolved value satisfies them; BodyNot matches only when no resolved
+// value equals the excluded value.
 type FilterSpec struct {
 	BodyEquals   map[string]string   `json:"body_equals,omitempty"`
 	HeaderEquals map[string]string   `json:"header_equals,omitempty"`
